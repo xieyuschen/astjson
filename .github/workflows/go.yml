@@ -1,0 +1,64 @@
+name: Go
+
+on:
+  push:
+    branches: ["**"]
+    paths-ignore:
+      - '**/README.md'
+      - '.gitignore'
+  pull_request:
+    branches: [ "master" ]
+    paths-ignore:
+      - '**/README.md'
+      - '.gitignore'
+jobs:
+  push-test:
+    name: push-test
+    if: github.event_name == 'push' && github.event_name != 'pull_request'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go: [ "1.19.6" ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+      - name: test
+        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        if: runner.os != 'Windows'
+      - name: test on windows
+        run: go test -v ./...
+        if: runner.os == 'Windows'
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  pr-test:
+    name: pr-test
+    if: github.event_name == 'pull_request'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go: [ "1.18.10","1.19.6"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+      - name: test
+        run: go test -race -v -coverprofile=coverage.txt -covermode=atomic ./...
+        if: runner.os != 'Windows'
+      - name: test on windows
+        run: go test -v ./...
+        if: runner.os == 'Windows'
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
