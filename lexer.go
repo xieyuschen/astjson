@@ -14,7 +14,28 @@ const (
 	Bool
 	Null
 	EOF
+	ObjectStart
+	ObjectEnd
+	Comma
+	Colon
 )
+
+var roster = map[Type]string{
+	WhiteSpace:  "WhiteSpace",
+	String:      "String",
+	Number:      "Number",
+	Bool:        "Bool",
+	Null:        "Null",
+	EOF:         "EOF",
+	ObjectStart: "ObjectStart",
+	ObjectEnd:   "ObjectEnd",
+	Comma:       "Comma",
+	Colon:       "Colon",
+}
+
+func (t Type) String() string {
+	return roster[t]
+}
 
 // var lexicalRule = map[int]string{
 // 	WhiteSpace: "WhiteSpace",
@@ -25,7 +46,7 @@ const (
 // types only.
 type token struct {
 	tp Type
-	
+
 	// the token value is [ leftPos, rightPos)
 	// index starts at 0
 	leftPos, rightPos int
@@ -33,7 +54,7 @@ type token struct {
 
 type lexer struct {
 	bs []byte
-	
+
 	// todo: try to use uint
 	curPos  int
 	lastPos int
@@ -50,14 +71,34 @@ func newLexer(bs []byte) *lexer {
 // Scan returns one token or panic
 // todo: return error instead of panic
 func (l *lexer) Scan() token {
-	if l.curPos == len(l.bs) {
-		return token{tp: EOF}
-	}
-	
-	c := l.bs[l.curPos]
 	// align sentries
 	l.lastPos = l.curPos
+
+	if l.curPos == len(l.bs) {
+		return token{
+			tp:       EOF,
+			leftPos:  l.curPos,
+			rightPos: l.curPos,
+		}
+	}
+
+	c := l.bs[l.curPos]
+
 	switch c {
+	case '{':
+		l.curPos += 1
+		return token{
+			tp:       ObjectStart,
+			leftPos:  l.lastPos,
+			rightPos: l.curPos,
+		}
+	case '}':
+		l.curPos += 1
+		return token{
+			tp:       ObjectEnd,
+			leftPos:  l.lastPos,
+			rightPos: l.curPos,
+		}
 	case '"':
 		// string case
 		// todo: support backward slash in the future
@@ -68,6 +109,27 @@ func (l *lexer) Scan() token {
 	case 'n':
 		// null case
 		return l.nullType()
+	case ' ', '\t', '\n', '\r':
+		l.curPos += 1
+		return token{
+			tp:       WhiteSpace,
+			leftPos:  l.lastPos,
+			rightPos: l.curPos,
+		}
+	case ':':
+		l.curPos += 1
+		return token{
+			tp:       Colon,
+			leftPos:  l.lastPos,
+			rightPos: l.curPos,
+		}
+	case ',':
+		l.curPos += 1
+		return token{
+			tp:       Comma,
+			leftPos:  l.lastPos,
+			rightPos: l.curPos,
+		}
 	default:
 		// number case
 		return l.numberType()
@@ -84,17 +146,19 @@ func (l *lexer) stringType() token {
 		if counter > maxStringLength {
 			panic(fmt.Sprintf("excessive string from %d to %d", l.lastPos, l.curPos))
 		}
-		
+
 		l.curPos++
 		if l.bs[l.curPos] != '"' {
 			continue
 		}
-		
+
+		// move curPos right because we need to conclude " as wel
+		l.curPos++
 		return token{
 			tp:      String,
 			leftPos: l.lastPos,
 			// the curPos ends at where the second " occurs
-			rightPos: l.curPos + 1,
+			rightPos: l.curPos,
 		}
 	}
 	panic(fmt.Sprintf("invalid string from %d to %d", l.lastPos, l.curPos))
@@ -110,7 +174,7 @@ func (l *lexer) boolType() token {
 			rightPos: l.curPos,
 		}
 	}
-	
+
 	if string(l.bs[l.lastPos:l.curPos+len("false")]) == "false" {
 		l.curPos += len("false")
 		return token{
@@ -119,7 +183,7 @@ func (l *lexer) boolType() token {
 			rightPos: l.curPos,
 		}
 	}
-	
+
 	panic("not a valid json string")
 }
 
@@ -127,7 +191,7 @@ func (l *lexer) boolType() token {
 func (l *lexer) nullType() token {
 	l.curPos += 4
 	str := string(l.bs[l.lastPos:l.curPos])
-	
+
 	if str == "null" {
 		return token{
 			tp:       Null,
@@ -135,7 +199,7 @@ func (l *lexer) nullType() token {
 			rightPos: l.curPos,
 		}
 	}
-	
+
 	panic("not a valid json string")
 }
 
@@ -143,16 +207,17 @@ func (l *lexer) numberType() token {
 	switch l.bs[l.curPos] {
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-':
 		l.curPos++
+	Loop:
 		for ; l.curPos < len(l.bs); l.curPos++ {
 			switch l.bs[l.curPos] {
 			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 				'.', 'e', 'E', '+', '-':
 			default:
-				break
+				break Loop
 			}
 		}
 	}
-	
+
 	return token{
 		tp:       Number,
 		leftPos:  l.lastPos,
