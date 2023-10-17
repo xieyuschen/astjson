@@ -2,6 +2,7 @@ package astjson
 
 import (
 	"fmt"
+	"strconv"
 )
 
 // Type represents the token type
@@ -16,6 +17,8 @@ const (
 	EOF
 	ObjectStart
 	ObjectEnd
+	ArrayStart
+	ArrayEnd
 	Comma
 	Colon
 )
@@ -99,9 +102,22 @@ func (l *lexer) Scan() token {
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
+	case '[':
+		l.curPos += 1
+		return token{
+			tp:       ArrayStart,
+			leftPos:  l.lastPos,
+			rightPos: l.curPos,
+		}
+	case ']':
+		l.curPos += 1
+		return token{
+			tp:       ArrayEnd,
+			leftPos:  l.lastPos,
+			rightPos: l.curPos,
+		}
 	case '"':
 		// string case
-		// todo: support backward slash in the future
 		return l.stringType()
 	case 'f', 't':
 		// bool case
@@ -136,19 +152,31 @@ func (l *lexer) Scan() token {
 	}
 }
 
-// todo: if a string is longer than 20 chars after ", we panic now.
-const maxStringLength = 10
-
 func (l *lexer) stringType() token {
-	var counter int
-	for l.curPos < len(l.bs) {
-		counter++
-		if counter > maxStringLength {
-			panic(fmt.Sprintf("excessive string from %d to %d", l.lastPos, l.curPos))
-		}
+	// move next to the starting "
+	l.curPos++
 
-		l.curPos++
+	for l.curPos < len(l.bs) {
+		if l.bs[l.curPos] == '\\' {
+			l.curPos++
+			switch l.bs[l.curPos] {
+			case '"', '\\', '/', 'b', 'f', 'n', 'r', 't':
+				l.curPos++
+				continue
+			case 'u':
+				// u1234: check whether it's a hex digital
+				s := l.bs[l.curPos+1 : l.curPos+5]
+				_, err := strconv.ParseUint(string(s), 16, 64)
+				if err != nil {
+					panic(fmt.Errorf("invalid hex string at %d", l.curPos))
+				}
+				l.curPos += 5
+			default:
+				panic(fmt.Sprintf("invalid string \\ near %d", l.curPos))
+			}
+		}
 		if l.bs[l.curPos] != '"' {
+			l.curPos++
 			continue
 		}
 
@@ -184,7 +212,7 @@ func (l *lexer) boolType() token {
 		}
 	}
 
-	panic("not a valid json string")
+	panic("not a valid json bool type")
 }
 
 // todo: return error instead of panic
@@ -200,7 +228,7 @@ func (l *lexer) nullType() token {
 		}
 	}
 
-	panic("not a valid json string")
+	panic("not a valid null value")
 }
 
 func (l *lexer) numberType() token {
