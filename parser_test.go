@@ -9,53 +9,42 @@ import (
 func Test_Parse(t *testing.T) {
 	testCases := map[string]struct {
 		input    string
-		expected Value
+		expected *Value
 	}{
-		"eof": {input: "", expected: Value{
-			tp: EOF,
-		}},
-		"string": {input: `"123"`, expected: Value{
-			tp:  String,
-			raw: []byte(`"123"`),
+		"eof": {input: "", expected: nil},
+		"string": {input: `"123"`, expected: &Value{
+			tp:  NtString,
 			val: StringAst(`"123"`),
 		}},
-		"positive integer": {input: "999", expected: Value{
-			tp:  Number,
-			raw: []byte("999"),
+		"positive integer": {input: "999", expected: &Value{
+			tp:  NtNumber,
 			val: NumberAst(999),
 		}},
-		"negative integer": {input: "-999", expected: Value{
-			tp:  Number,
-			raw: []byte("-999"),
+		"negative integer": {input: "-999", expected: &Value{
+			tp:  NtNumber,
 			val: NumberAst(-999),
 		}},
-		"zero": {input: "0", expected: Value{
-			tp:  Number,
-			raw: []byte("0"),
+		"zero": {input: "0", expected: &Value{
+			tp:  NtNumber,
 			val: NumberAst(0),
 		}},
-		"positive float": {input: "0.99", expected: Value{
-			tp:  Number,
-			raw: []byte("0.99"),
+		"positive float": {input: "0.99", expected: &Value{
+			tp:  NtNumber,
 			val: NumberAst(0.99),
 		}},
-		"negative float": {input: "-0.99", expected: Value{
-			tp:  Number,
-			raw: []byte("-0.99"),
+		"negative float": {input: "-0.99", expected: &Value{
+			tp:  NtNumber,
 			val: NumberAst(-0.99),
 		}},
-		"null": {input: "null", expected: Value{
-			tp:  Null,
-			raw: []byte("null"),
+		"null": {input: "null", expected: &Value{
+			tp: NtNull,
 		}},
-		"true": {input: "true", expected: Value{
-			tp:  Bool,
-			raw: []byte("true"),
+		"true": {input: "true", expected: &Value{
+			tp:  NtBool,
 			val: BoolAst(true),
 		}},
-		"false": {input: "false", expected: Value{
-			tp:  Bool,
-			raw: []byte("false"),
+		"false": {input: "false", expected: &Value{
+			tp:  NtBool,
 			val: BoolAst(false),
 		}},
 	}
