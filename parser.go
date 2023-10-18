@@ -4,12 +4,24 @@ import (
 	"strconv"
 )
 
+// NodeType represents an AST node type
+type NodeType uint
+
+const (
+	// NtNumber denotes an AST node is a number node
+	// todo: Nt prefix sounds messy. try to find a better name
+	NtNumber NodeType = iota
+	NtNull
+	NtString
+	NtBool
+	NtObject
+	NtArray
+)
+
 // Value is the concrete AST representation
 type Value struct {
-	// todo: which name is better? tp or op
-	tp Type
+	tp NodeType
 
-	raw []byte
 	// use assert with the help of tp
 	val interface{}
 }
@@ -19,34 +31,39 @@ type NullAst struct{} // only type make snese for NullAst
 type BoolAst bool
 type StringAst string
 
-func Parse(bs []byte) Value {
-	l := newLexer(bs)
-	tk := l.Scan()
-
-	v := Value{
-		tp: tk.tp,
-	}
-
-	// same leftPos and rightPos will get an array hold a nil
-	// instead of a nil array
-	if l.lastPos != l.curPos {
-		v.raw = bs[tk.leftPos:tk.rightPos]
-	}
+func literal(bs []byte, tk token) *Value {
+	var v Value
+	rawStr := string(bs[tk.leftPos:tk.rightPos])
 	switch tk.tp {
 	case String:
-		v.val = StringAst(v.raw)
-		return v
+		v.tp = NtString
+		v.val = StringAst(rawStr)
 	case Bool:
-		b, _ := strconv.ParseBool(string(v.raw))
+		v.tp = NtBool
+		b, _ := strconv.ParseBool(rawStr)
 		v.val = BoolAst(b)
-		return v
-
 	case Number:
-		f, _ := strconv.ParseFloat(string(v.raw), 64)
+		v.tp = NtNumber
+		f, _ := strconv.ParseFloat(rawStr, 64)
 		v.val = NumberAst(f)
-		return v
-	case EOF, Null:
+	case Null:
 		// the val of those types are useless
+		v.tp = NtNull
 	}
-	return v
+	return &v
+}
+
+func Parse(bs []byte) *Value {
+	l := newLexer(bs)
+
+	tk := l.Scan()
+	switch tk.tp {
+	case Number, String, Bool, Null:
+		return literal(bs, tk)
+	case EOF:
+		return nil
+	default:
+		// todo: further impl
+		return nil
+	}
 }
