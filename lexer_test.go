@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Scan(t *testing.T) {
+func Test_Scan_Simple_Tokens(t *testing.T) {
 	testCases := map[string]struct {
 		input    string
 		expected token
@@ -20,6 +20,66 @@ func Test_Scan(t *testing.T) {
 			tp:       String,
 			leftPos:  0,
 			rightPos: 5,
+		}},
+		"string with backward slash": {input: `"\"123"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 7,
+		}},
+		`string with \"`: {input: `"\"123"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 7,
+		}},
+		`string with \\"`: {input: `"\\123"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 7,
+		}},
+		`string with \/"`: {input: `"\/123"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 7,
+		}},
+		`string with \b"`: {input: `"\b123"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 7,
+		}},
+		`string with \f"`: {input: `"\f123"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 7,
+		}},
+		`string with \n"`: {input: `"\n123"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 7,
+		}},
+		`string with \r"`: {input: `"\r123"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 7,
+		}},
+		`string with \t"`: {input: `"\t123"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 7,
+		}},
+		`string with \u1234"`: {input: `"\u1234"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 8,
+		}},
+		`string with \uabcd"`: {input: `"\uabcd"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 8,
+		}},
+		`string with \uffff"`: {input: `"\uffff"`, expected: token{
+			tp:       String,
+			leftPos:  0,
+			rightPos: 8,
 		}},
 		"positive integer": {input: "999", expected: token{
 			tp:       Number,
@@ -68,6 +128,16 @@ func Test_Scan(t *testing.T) {
 		}},
 		"right }": {input: "}", expected: token{
 			tp:       ObjectEnd,
+			leftPos:  0,
+			rightPos: 1,
+		}},
+		"left [": {input: `[`, expected: token{
+			tp:       ArrayStart,
+			leftPos:  0,
+			rightPos: 1,
+		}},
+		"right ]": {input: "]", expected: token{
+			tp:       ArrayEnd,
 			leftPos:  0,
 			rightPos: 1,
 		}},
@@ -146,6 +216,16 @@ func Test_Scan_Multiple_Tokens(t *testing.T) {
 		`{123,}`:                                {input: `{123,}`, expected: []Type{ObjectStart, Number, Comma, ObjectEnd, EOF}},
 		`{1.234,}`:                              {input: `{1.234,}`, expected: []Type{ObjectStart, Number, Comma, ObjectEnd, EOF}},
 		`{"123",}`:                              {input: `{"123",}`, expected: []Type{ObjectStart, String, Comma, ObjectEnd, EOF}},
+		`[]`:                                    {input: `[]`, expected: []Type{ArrayStart, ArrayEnd, EOF}},
+		`["1"]`:                                 {input: `["1"]`, expected: []Type{ArrayStart, String, ArrayEnd, EOF}},
+		`[1]`:                                   {input: `[1]`, expected: []Type{ArrayStart, Number, ArrayEnd, EOF}},
+		`[1.23]`:                                {input: `[1.23]`, expected: []Type{ArrayStart, Number, ArrayEnd, EOF}},
+		`[-1.23]`:                               {input: `[-1.23]`, expected: []Type{ArrayStart, Number, ArrayEnd, EOF}},
+		`[1,2]`:                                 {input: `[1,2]`, expected: []Type{ArrayStart, Number, Comma, Number, ArrayEnd, EOF}},
+		`"\ufffff"`:                             {input: `"\ufffff"`, expected: []Type{String, EOF}},
+		`"\uffffg"`:                             {input: `"\uffffg"`, expected: []Type{String, EOF}},
+		`"\uffff\uffff"`:                        {input: `"\uffff\uffff"`, expected: []Type{String, EOF}},
+		`"\"\/\\\b\f\n\r\t\uabcd"`:              {input: `"\"\/\\\b\f\n\r\t\uabcd"`, expected: []Type{String, EOF}},
 	}
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
@@ -165,6 +245,28 @@ func Test_Scan_Multiple_Tokens(t *testing.T) {
 				counter++
 
 			}
+		})
+	}
+}
+
+func Test_Scan_Panic(t *testing.T) {
+	testCases := map[string]struct {
+		input string
+	}{
+		`invalid string \d`:     {input: `"\d"`},
+		`invalid string \uabcg`: {input: `"\uabcg"`},
+		`invalid string "abc`:   {input: `"abc`},
+		`invalid bool truu`:     {input: "truu"},
+		`invalid bool falss `:   {input: "falss"},
+		`invalid null nul `:     {input: "nul"},
+		`invalid null nul1 `:    {input: "nul1"},
+	}
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			assert.Panics(t, func() {
+				l := newLexer([]byte(tc.input))
+				_ = l.Scan()
+			})
 		})
 	}
 
