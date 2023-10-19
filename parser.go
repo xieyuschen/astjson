@@ -37,6 +37,7 @@ type ObjectAst struct {
 }
 
 type ArrayAst struct {
+	values []Value
 }
 
 func Parse(bs []byte) *Value {
@@ -49,12 +50,13 @@ type Parser struct {
 }
 
 func (p *Parser) Parse() *Value {
-	return p.parse()
+	p.l.Reset()
+	tk := p.nextExceptWhitespace()
+	return p.parse(tk)
 }
 
 // parse helps to get a whole object, array or a literal type.
-func (p *Parser) parse() *Value {
-	tk := p.nextExceptWhitespace()
+func (p *Parser) parse(tk token) *Value {
 	switch tk.tp {
 	case Number, String, Bool, Null:
 		return literal(p.bs, tk)
@@ -69,8 +71,50 @@ func (p *Parser) parse() *Value {
 	}
 }
 
+func (a *ArrayAst) verifyNextType(ntp NodeType) bool {
+	if len(a.values) == 0 {
+		return true
+	}
+	if a.values[len(a.values)-1].tp == ntp {
+		return true
+	}
+	return false
+}
+
 func (p *Parser) arrayParser() *Value {
-	return nil
+	var ar ArrayAst
+
+	for {
+		tk := p.nextExceptWhitespace()
+		if tk.tp == ArrayEnd {
+			return &Value{
+				tp:  NtArray,
+				val: &ArrayAst{},
+			}
+		}
+		val := p.parse(tk)
+
+		if ar.verifyNextType(val.tp) {
+			ar.values = append(ar.values, *val)
+		} else {
+			panic("inconsistent array value type")
+		}
+
+		// check whether an array ends
+		then := p.nextExceptWhitespace()
+		if then.tp == ArrayEnd {
+			break
+		} else if then.tp == Comma {
+			continue
+		} else {
+			panic("invalid token after colon")
+		}
+	}
+
+	return &Value{
+		tp:  NtArray,
+		val: &ar,
+	}
 }
 
 func (p *Parser) objectParser() *Value {
@@ -100,10 +144,11 @@ func (p *Parser) objectParser() *Value {
 			panic("duplicated key")
 		}
 
-		val := p.parse()
+		val := p.parse(p.nextExceptWhitespace())
 		v.m[*key] = *val
 
 		// check whether an object ends
+		// todo: refine me: the logic here is duplicated with the beginning of the for loop
 		then := p.nextExceptWhitespace()
 		if then.tp == ObjectEnd {
 			break
