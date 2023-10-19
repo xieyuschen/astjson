@@ -9,47 +9,43 @@ import (
 type Type uint
 
 const (
-	WhiteSpace Type = iota
-	String
-	Number
-	Bool
-	Null
-	EOF
-	ObjectStart
-	ObjectEnd
-	ArrayStart
-	ArrayEnd
-	Comma
-	Colon
+	tkWhiteSpace Type = iota
+	tkString
+	tkNumber
+	tkBool
+	tkNull
+	tkEOF
+	tkObjectStart
+	tkObjectEnd
+	tkArrayStart
+	tkArrayEnd
+	tkComma
+	tkColon
 )
 
 var roster = map[Type]string{
-	WhiteSpace:  "WhiteSpace",
-	String:      "String",
-	Number:      "Number",
-	Bool:        "Bool",
-	Null:        "Null",
-	EOF:         "EOF",
-	ObjectStart: "ObjectStart",
-	ObjectEnd:   "ObjectEnd",
-	Comma:       "Comma",
-	Colon:       "Colon",
+	tkWhiteSpace:  "tkWhiteSpace",
+	tkString:      "tkString",
+	tkNumber:      "tkNumber",
+	tkBool:        "tkBool",
+	tkNull:        "tkNull",
+	tkEOF:         "tkEOF",
+	tkObjectStart: "tkObjectStart",
+	tkObjectEnd:   "tkObjectEnd",
+	tkComma:       "tkComma",
+	tkColon:       "tkColon",
 }
 
 func (t Type) String() string {
 	return roster[t]
 }
 
-// var lexicalRule = map[int]string{
-// 	WhiteSpace: "WhiteSpace",
-// }
-
 // token represents the json token.
 // currently, token only supports to the limited json value and limits primitive
 // types only.
 type token struct {
 	tp Type
-
+	
 	// the token value is [ leftPos, rightPos)
 	// index starts at 0
 	leftPos, rightPos int
@@ -57,7 +53,7 @@ type token struct {
 
 type lexer struct {
 	bs []byte
-
+	
 	// todo: try to use uint
 	curPos  int
 	lastPos int
@@ -80,43 +76,43 @@ func (l *lexer) Reset() {
 func (l *lexer) Scan() token {
 	// align sentries
 	l.lastPos = l.curPos
-
+	
 	if l.curPos == len(l.bs) {
 		return token{
-			tp:       EOF,
+			tp:       tkEOF,
 			leftPos:  l.curPos,
 			rightPos: l.curPos,
 		}
 	}
-
+	
 	c := l.bs[l.curPos]
-
+	
 	switch c {
 	case '{':
 		l.curPos += 1
 		return token{
-			tp:       ObjectStart,
+			tp:       tkObjectStart,
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
 	case '}':
 		l.curPos += 1
 		return token{
-			tp:       ObjectEnd,
+			tp:       tkObjectEnd,
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
 	case '[':
 		l.curPos += 1
 		return token{
-			tp:       ArrayStart,
+			tp:       tkArrayStart,
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
 	case ']':
 		l.curPos += 1
 		return token{
-			tp:       ArrayEnd,
+			tp:       tkArrayEnd,
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
@@ -132,21 +128,21 @@ func (l *lexer) Scan() token {
 	case ' ', '\t', '\n', '\r':
 		l.curPos += 1
 		return token{
-			tp:       WhiteSpace,
+			tp:       tkWhiteSpace,
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
 	case ':':
 		l.curPos += 1
 		return token{
-			tp:       Colon,
+			tp:       tkColon,
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
 	case ',':
 		l.curPos += 1
 		return token{
-			tp:       Comma,
+			tp:       tkComma,
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
@@ -159,7 +155,7 @@ func (l *lexer) Scan() token {
 func (l *lexer) stringType() token {
 	// move next to the starting "
 	l.curPos++
-
+	
 	for l.curPos < len(l.bs) {
 		if l.bs[l.curPos] == '\\' {
 			l.curPos++
@@ -183,11 +179,11 @@ func (l *lexer) stringType() token {
 			l.curPos++
 			continue
 		}
-
+		
 		// move curPos right because we need to conclude " as wel
 		l.curPos++
 		return token{
-			tp:      String,
+			tp:      tkString,
 			leftPos: l.lastPos,
 			// the curPos ends at where the second " occurs
 			rightPos: l.curPos,
@@ -201,21 +197,21 @@ func (l *lexer) boolType() token {
 	if string(l.bs[l.lastPos:l.curPos+len("true")]) == "true" {
 		l.curPos += len("true")
 		return token{
-			tp:       Bool,
+			tp:       tkBool,
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
 	}
-
+	
 	if string(l.bs[l.lastPos:l.curPos+len("false")]) == "false" {
 		l.curPos += len("false")
 		return token{
-			tp:       Bool,
+			tp:       tkBool,
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
 	}
-
+	
 	panic("not a valid json bool type")
 }
 
@@ -223,15 +219,15 @@ func (l *lexer) boolType() token {
 func (l *lexer) nullType() token {
 	l.curPos += 4
 	str := string(l.bs[l.lastPos:l.curPos])
-
+	
 	if str == "null" {
 		return token{
-			tp:       Null,
+			tp:       tkNull,
 			leftPos:  l.lastPos,
 			rightPos: l.curPos,
 		}
 	}
-
+	
 	panic("not a valid null value")
 }
 
@@ -249,9 +245,9 @@ func (l *lexer) numberType() token {
 			}
 		}
 	}
-
+	
 	return token{
-		tp:       Number,
+		tp:       tkNumber,
 		leftPos:  l.lastPos,
 		rightPos: l.curPos,
 	}

@@ -2,7 +2,7 @@ package astjson
 
 import (
 	"testing"
-
+	
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,40 +13,40 @@ func Test_Parse_Literal(t *testing.T) {
 	}{
 		"eof": {input: "", expected: nil},
 		"string": {input: `"123"`, expected: &Value{
-			tp:  NtString,
-			val: StringAst("123"),
+			NodeType: String,
+			AstValue: StringAst("123"),
 		}},
 		"positive integer": {input: "999", expected: &Value{
-			tp:  NtNumber,
-			val: NumberAst(999),
+			NodeType: Number,
+			AstValue: NumberAst(999),
 		}},
 		"negative integer": {input: "-999", expected: &Value{
-			tp:  NtNumber,
-			val: NumberAst(-999),
+			NodeType: Number,
+			AstValue: NumberAst(-999),
 		}},
 		"zero": {input: "0", expected: &Value{
-			tp:  NtNumber,
-			val: NumberAst(0),
+			NodeType: Number,
+			AstValue: NumberAst(0),
 		}},
 		"positive float": {input: "0.99", expected: &Value{
-			tp:  NtNumber,
-			val: NumberAst(0.99),
+			NodeType: Number,
+			AstValue: NumberAst(0.99),
 		}},
 		"negative float": {input: "-0.99", expected: &Value{
-			tp:  NtNumber,
-			val: NumberAst(-0.99),
+			NodeType: Number,
+			AstValue: NumberAst(-0.99),
 		}},
 		"null": {input: "null", expected: &Value{
-			tp:  NtNull,
-			val: &NullAst{},
+			NodeType: Null,
+			AstValue: &NullAst{},
 		}},
 		"true": {input: "true", expected: &Value{
-			tp:  NtBool,
-			val: BoolAst(true),
+			NodeType: Bool,
+			AstValue: BoolAst(true),
 		}},
 		"false": {input: "false", expected: &Value{
-			tp:  NtBool,
-			val: BoolAst(false),
+			NodeType: Bool,
+			AstValue: BoolAst(false),
 		}},
 	}
 	for name, tc := range testCases {
@@ -67,17 +67,17 @@ func Test_Parse_Object(t *testing.T) {
 			name:  "empty object",
 			input: "{}",
 			expected: &Value{
-				tp:  NtObject,
-				val: &ObjectAst{map[Value]Value{}},
+				NodeType: Object,
+				AstValue: &ObjectAst{map[Value]Value{}},
 			},
 		},
 		{
 			name:  "string: string",
 			input: `{"123": "123"}`,
 			expected: &Value{
-				tp: NtObject,
-				val: &ObjectAst{map[Value]Value{
-					Value{tp: NtString, val: StringAst("123")}: {tp: NtString, val: StringAst("123")}},
+				NodeType: Object,
+				AstValue: &ObjectAst{map[Value]Value{
+					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: String, AstValue: StringAst("123")}},
 				},
 			},
 		},
@@ -85,9 +85,9 @@ func Test_Parse_Object(t *testing.T) {
 			name:  "string: number",
 			input: `{"123": 123}`,
 			expected: &Value{
-				tp: NtObject,
-				val: &ObjectAst{map[Value]Value{
-					Value{tp: NtString, val: StringAst("123")}: {tp: NtNumber, val: NumberAst(123)}},
+				NodeType: Object,
+				AstValue: &ObjectAst{map[Value]Value{
+					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Number, AstValue: NumberAst(123)}},
 				},
 			},
 		},
@@ -95,9 +95,9 @@ func Test_Parse_Object(t *testing.T) {
 			name:  "string: bool true",
 			input: `{"123": true}`,
 			expected: &Value{
-				tp: NtObject,
-				val: &ObjectAst{map[Value]Value{
-					Value{tp: NtString, val: StringAst("123")}: {tp: NtBool, val: BoolAst(true)}},
+				NodeType: Object,
+				AstValue: &ObjectAst{map[Value]Value{
+					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Bool, AstValue: BoolAst(true)}},
 				},
 			},
 		},
@@ -105,9 +105,9 @@ func Test_Parse_Object(t *testing.T) {
 			name:  "string: bool false",
 			input: `{"123": false}`,
 			expected: &Value{
-				tp: NtObject,
-				val: &ObjectAst{map[Value]Value{
-					Value{tp: NtString, val: StringAst("123")}: {tp: NtBool, val: BoolAst(false)}},
+				NodeType: Object,
+				AstValue: &ObjectAst{map[Value]Value{
+					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Bool, AstValue: BoolAst(false)}},
 				},
 			},
 		},
@@ -115,9 +115,9 @@ func Test_Parse_Object(t *testing.T) {
 			name:  "string: null",
 			input: `{"123": null}`,
 			expected: &Value{
-				tp: NtObject,
-				val: &ObjectAst{map[Value]Value{
-					Value{tp: NtString, val: StringAst("123")}: {tp: NtNull, val: &NullAst{}}},
+				NodeType: Object,
+				AstValue: &ObjectAst{map[Value]Value{
+					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Null, AstValue: &NullAst{}}},
 				},
 			},
 		},
@@ -125,10 +125,10 @@ func Test_Parse_Object(t *testing.T) {
 			name:  "string: null and string: null",
 			input: `{"123": null, "12": null}`,
 			expected: &Value{
-				tp: NtObject,
-				val: &ObjectAst{map[Value]Value{
-					Value{tp: NtString, val: StringAst("123")}: {tp: NtNull, val: &NullAst{}},
-					Value{tp: NtString, val: StringAst("12")}:  {tp: NtNull, val: &NullAst{}},
+				NodeType: Object,
+				AstValue: &ObjectAst{map[Value]Value{
+					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Null, AstValue: &NullAst{}},
+					Value{NodeType: String, AstValue: StringAst("12")}:  {NodeType: Null, AstValue: &NullAst{}},
 				},
 				},
 			},
@@ -152,17 +152,17 @@ func Test_Parse_Array(t *testing.T) {
 			name:  "empty array",
 			input: "[]",
 			expected: &Value{
-				tp:  NtArray,
-				val: &ArrayAst{},
+				NodeType: Array,
+				AstValue: &ArrayAst{},
 			},
 		},
 		{
 			name:  "single string array",
 			input: `[ "123"]`,
 			expected: &Value{
-				tp: NtArray,
-				val: &ArrayAst{[]Value{
-					{tp: NtString, val: StringAst("123")},
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: String, AstValue: StringAst("123")},
 				}},
 			},
 		},
@@ -170,10 +170,10 @@ func Test_Parse_Array(t *testing.T) {
 			name:  "double string array",
 			input: `[ "123", "456"]`,
 			expected: &Value{
-				tp: NtArray,
-				val: &ArrayAst{[]Value{
-					{tp: NtString, val: StringAst("123")},
-					{tp: NtString, val: StringAst("456")},
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: String, AstValue: StringAst("123")},
+					{NodeType: String, AstValue: StringAst("456")},
 				}},
 			},
 		},
@@ -181,11 +181,11 @@ func Test_Parse_Array(t *testing.T) {
 			name:  "int array",
 			input: `[ -1,0,1]`,
 			expected: &Value{
-				tp: NtArray,
-				val: &ArrayAst{[]Value{
-					{tp: NtNumber, val: NumberAst(-1)},
-					{tp: NtNumber, val: NumberAst(0)},
-					{tp: NtNumber, val: NumberAst(1)},
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: Number, AstValue: NumberAst(-1)},
+					{NodeType: Number, AstValue: NumberAst(0)},
+					{NodeType: Number, AstValue: NumberAst(1)},
 				}},
 			},
 		},
@@ -193,11 +193,11 @@ func Test_Parse_Array(t *testing.T) {
 			name:  "float array",
 			input: `[ -0.99, 0, 9.99 ]`,
 			expected: &Value{
-				tp: NtArray,
-				val: &ArrayAst{[]Value{
-					{tp: NtNumber, val: NumberAst(-0.99)},
-					{tp: NtNumber, val: NumberAst(0)},
-					{tp: NtNumber, val: NumberAst(9.99)},
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: Number, AstValue: NumberAst(-0.99)},
+					{NodeType: Number, AstValue: NumberAst(0)},
+					{NodeType: Number, AstValue: NumberAst(9.99)},
 				}},
 			},
 		},
@@ -205,10 +205,10 @@ func Test_Parse_Array(t *testing.T) {
 			name:  "null array",
 			input: `[ null, null ]`,
 			expected: &Value{
-				tp: NtArray,
-				val: &ArrayAst{[]Value{
-					{tp: NtNull, val: &NullAst{}},
-					{tp: NtNull, val: &NullAst{}},
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: Null, AstValue: &NullAst{}},
+					{NodeType: Null, AstValue: &NullAst{}},
 				}},
 			},
 		},
@@ -216,10 +216,10 @@ func Test_Parse_Array(t *testing.T) {
 			name:  "bool array",
 			input: `[ true, false ]`,
 			expected: &Value{
-				tp: NtArray,
-				val: &ArrayAst{[]Value{
-					{tp: NtBool, val: BoolAst(true)},
-					{tp: NtBool, val: BoolAst(false)},
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: Bool, AstValue: BoolAst(true)},
+					{NodeType: Bool, AstValue: BoolAst(false)},
 				}},
 			},
 		},
@@ -227,9 +227,9 @@ func Test_Parse_Array(t *testing.T) {
 			name:  "empty array of array",
 			input: `[ [] ]`,
 			expected: &Value{
-				tp: NtArray,
-				val: &ArrayAst{[]Value{
-					{tp: NtArray, val: &ArrayAst{}},
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: Array, AstValue: &ArrayAst{}},
 				}},
 			},
 		},
@@ -237,10 +237,10 @@ func Test_Parse_Array(t *testing.T) {
 			name:  "two empty array of array",
 			input: `[ [], [] ]`,
 			expected: &Value{
-				tp: NtArray,
-				val: &ArrayAst{[]Value{
-					{tp: NtArray, val: &ArrayAst{}},
-					{tp: NtArray, val: &ArrayAst{}},
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: Array, AstValue: &ArrayAst{}},
+					{NodeType: Array, AstValue: &ArrayAst{}},
 				}},
 			},
 		},
@@ -248,13 +248,13 @@ func Test_Parse_Array(t *testing.T) {
 			name:  "embed string array of array",
 			input: `[ ["123"], ["123"] ]`,
 			expected: &Value{
-				tp: NtArray,
-				val: &ArrayAst{[]Value{
-					{tp: NtArray, val: &ArrayAst{[]Value{
-						{tp: NtString, val: StringAst("123")},
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: Array, AstValue: &ArrayAst{[]Value{
+						{NodeType: String, AstValue: StringAst("123")},
 					}}},
-					{tp: NtArray, val: &ArrayAst{[]Value{
-						{tp: NtString, val: StringAst("123")},
+					{NodeType: Array, AstValue: &ArrayAst{[]Value{
+						{NodeType: String, AstValue: StringAst("123")},
 					}}},
 				}},
 			},
@@ -293,66 +293,66 @@ func Test_Parse_Mixture(t *testing.T) {
 
 			}`,
 			expected: &Value{
-				tp: NtObject,
-				val: &ObjectAst{map[Value]Value{
-					Value{tp: NtString, val: StringAst("str")}:   {tp: NtString, val: StringAst(`123\b\t\r\n`)},
-					Value{tp: NtString, val: StringAst("num")}:   {tp: NtNumber, val: NumberAst(123)},
-					Value{tp: NtString, val: StringAst("bool")}:  {tp: NtBool, val: BoolAst(true)},
-					Value{tp: NtString, val: StringAst("null")}:  {tp: NtNull, val: &NullAst{}},
-					Value{tp: NtString, val: StringAst("empty")}: {tp: NtObject, val: &ObjectAst{map[Value]Value{}}},
-					Value{tp: NtString, val: StringAst("embed-object")}: {
-						tp: NtObject,
-						val: &ObjectAst{map[Value]Value{
-							Value{tp: NtString, val: StringAst("hello")}: {tp: NtString, val: StringAst("world")},
+				NodeType: Object,
+				AstValue: &ObjectAst{map[Value]Value{
+					Value{NodeType: String, AstValue: StringAst("str")}:   {NodeType: String, AstValue: StringAst(`123\b\t\r\n`)},
+					Value{NodeType: String, AstValue: StringAst("num")}:   {NodeType: Number, AstValue: NumberAst(123)},
+					Value{NodeType: String, AstValue: StringAst("bool")}:  {NodeType: Bool, AstValue: BoolAst(true)},
+					Value{NodeType: String, AstValue: StringAst("null")}:  {NodeType: Null, AstValue: &NullAst{}},
+					Value{NodeType: String, AstValue: StringAst("empty")}: {NodeType: Object, AstValue: &ObjectAst{map[Value]Value{}}},
+					Value{NodeType: String, AstValue: StringAst("embed-object")}: {
+						NodeType: Object,
+						AstValue: &ObjectAst{map[Value]Value{
+							Value{NodeType: String, AstValue: StringAst("hello")}: {NodeType: String, AstValue: StringAst("world")},
 						}}},
-					Value{tp: NtString, val: StringAst("array-in-object")}: {
-						tp: NtObject,
-						val: &ObjectAst{map[Value]Value{
-							Value{tp: NtString, val: StringAst("hello")}: {
-								tp:  NtArray,
-								val: &ArrayAst{values: []Value{{tp: NtString, val: StringAst("world")}}}}},
+					Value{NodeType: String, AstValue: StringAst("array-in-object")}: {
+						NodeType: Object,
+						AstValue: &ObjectAst{map[Value]Value{
+							Value{NodeType: String, AstValue: StringAst("hello")}: {
+								NodeType: Array,
+								AstValue: &ArrayAst{values: []Value{{NodeType: String, AstValue: StringAst("world")}}}}},
 						}},
-					Value{tp: NtString, val: StringAst("array")}: {
-						tp: NtArray,
-						val: &ArrayAst{[]Value{
-							{tp: NtString, val: StringAst("world")},
-						}},
-					},
-					Value{tp: NtString, val: StringAst("empty-array")}: {
-						tp:  NtArray,
-						val: &ArrayAst{},
-					},
-					Value{tp: NtString, val: StringAst("embed-empty-array")}: {
-						tp: NtArray,
-						val: &ArrayAst{[]Value{
-							{tp: NtArray, val: &ArrayAst{}},
-							{tp: NtArray, val: &ArrayAst{}},
+					Value{NodeType: String, AstValue: StringAst("array")}: {
+						NodeType: Array,
+						AstValue: &ArrayAst{[]Value{
+							{NodeType: String, AstValue: StringAst("world")},
 						}},
 					},
-					Value{tp: NtString, val: StringAst("array-empty-obj")}: {
-						tp: NtArray,
-						val: &ArrayAst{[]Value{
-							{tp: NtObject, val: &ObjectAst{m: map[Value]Value{}}},
-							{tp: NtObject, val: &ObjectAst{m: map[Value]Value{}}},
+					Value{NodeType: String, AstValue: StringAst("empty-array")}: {
+						NodeType: Array,
+						AstValue: &ArrayAst{},
+					},
+					Value{NodeType: String, AstValue: StringAst("embed-empty-array")}: {
+						NodeType: Array,
+						AstValue: &ArrayAst{[]Value{
+							{NodeType: Array, AstValue: &ArrayAst{}},
+							{NodeType: Array, AstValue: &ArrayAst{}},
 						}},
 					},
-					Value{tp: NtString, val: StringAst("array-obj")}: {
-						tp: NtArray,
-						val: &ArrayAst{[]Value{
-							{tp: NtObject, val: &ObjectAst{map[Value]Value{{tp: NtString, val: StringAst("hello")}: {tp: NtString, val: StringAst("world")}}}},
-							{tp: NtObject, val: &ObjectAst{map[Value]Value{{tp: NtString, val: StringAst("hello")}: {tp: NtString, val: StringAst("world")}}}},
+					Value{NodeType: String, AstValue: StringAst("array-empty-obj")}: {
+						NodeType: Array,
+						AstValue: &ArrayAst{[]Value{
+							{NodeType: Object, AstValue: &ObjectAst{m: map[Value]Value{}}},
+							{NodeType: Object, AstValue: &ObjectAst{m: map[Value]Value{}}},
+						}},
+					},
+					Value{NodeType: String, AstValue: StringAst("array-obj")}: {
+						NodeType: Array,
+						AstValue: &ArrayAst{[]Value{
+							{NodeType: Object, AstValue: &ObjectAst{map[Value]Value{{NodeType: String, AstValue: StringAst("hello")}: {NodeType: String, AstValue: StringAst("world")}}}},
+							{NodeType: Object, AstValue: &ObjectAst{map[Value]Value{{NodeType: String, AstValue: StringAst("hello")}: {NodeType: String, AstValue: StringAst("world")}}}},
 						}},
 					},
 				}},
 			},
 		},
 	}
-
+	
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			value := Parse([]byte(tc.input))
 			assert.Equal(t, tc.expected, value)
 		})
 	}
-
+	
 }
