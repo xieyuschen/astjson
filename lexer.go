@@ -71,6 +71,10 @@ func newLexer(bs []byte) *lexer {
 	}
 }
 
+func (l *lexer) Reset() {
+	l.curPos, l.lastPos = 0, 0
+}
+
 // Scan returns one token or panic
 // todo: return error instead of panic
 func (l *lexer) Scan() token {
