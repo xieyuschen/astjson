@@ -1,5 +1,10 @@
 package astjson
 
+import (
+	"fmt"
+	"strconv"
+)
+
 // NodeType represents an AST node type
 type NodeType uint
 
@@ -33,4 +38,18 @@ type ObjectAst struct {
 
 type ArrayAst struct {
 	values []Value
+}
+
+func (v *Value) String() string {
+	switch v.NodeType {
+	case Number:
+		return fmt.Sprintf("%f", v.AstValue)
+	case String:
+		return v.AstValue.(string)
+	case Bool:
+		return strconv.FormatBool(v.AstValue.(bool))
+	case Null:
+		return "null"
+	}
+	return ""
 }
