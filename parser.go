@@ -17,6 +17,8 @@ type Parser struct {
 	l  *lexer
 }
 
+// Parse returns the valid AST value, nil or panic
+// todo: deprecated it because we want to return error instead of panic
 func (p *Parser) Parse() *Value {
 	p.l.Reset()
 	tk := p.nextExceptWhitespace()
