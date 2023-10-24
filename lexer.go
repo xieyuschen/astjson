@@ -45,7 +45,7 @@ func (t Type) String() string {
 // types only.
 type token struct {
 	tp Type
-	
+
 	// the token value is [ leftPos, rightPos)
 	// index starts at 0
 	leftPos, rightPos int
@@ -53,7 +53,7 @@ type token struct {
 
 type lexer struct {
 	bs []byte
-	
+
 	// todo: try to use uint
 	curPos  int
 	lastPos int
@@ -76,7 +76,7 @@ func (l *lexer) Reset() {
 func (l *lexer) Scan() token {
 	// align sentries
 	l.lastPos = l.curPos
-	
+
 	if l.curPos == len(l.bs) {
 		return token{
 			tp:       tkEOF,
@@ -84,9 +84,9 @@ func (l *lexer) Scan() token {
 			rightPos: l.curPos,
 		}
 	}
-	
+
 	c := l.bs[l.curPos]
-	
+
 	switch c {
 	case '{':
 		l.curPos += 1
@@ -155,7 +155,7 @@ func (l *lexer) Scan() token {
 func (l *lexer) stringType() token {
 	// move next to the starting "
 	l.curPos++
-	
+
 	for l.curPos < len(l.bs) {
 		if l.bs[l.curPos] == '\\' {
 			l.curPos++
@@ -179,7 +179,7 @@ func (l *lexer) stringType() token {
 			l.curPos++
 			continue
 		}
-		
+
 		// move curPos right because we need to conclude " as wel
 		l.curPos++
 		return token{
@@ -202,7 +202,7 @@ func (l *lexer) boolType() token {
 			rightPos: l.curPos,
 		}
 	}
-	
+
 	if string(l.bs[l.lastPos:l.curPos+len("false")]) == "false" {
 		l.curPos += len("false")
 		return token{
@@ -211,7 +211,7 @@ func (l *lexer) boolType() token {
 			rightPos: l.curPos,
 		}
 	}
-	
+
 	panic("not a valid json bool type")
 }
 
@@ -219,7 +219,7 @@ func (l *lexer) boolType() token {
 func (l *lexer) nullType() token {
 	l.curPos += 4
 	str := string(l.bs[l.lastPos:l.curPos])
-	
+
 	if str == "null" {
 		return token{
 			tp:       tkNull,
@@ -227,7 +227,7 @@ func (l *lexer) nullType() token {
 			rightPos: l.curPos,
 		}
 	}
-	
+
 	panic("not a valid null value")
 }
 
@@ -245,7 +245,7 @@ func (l *lexer) numberType() token {
 			}
 		}
 	}
-	
+
 	return token{
 		tp:       tkNumber,
 		leftPos:  l.lastPos,

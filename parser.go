@@ -57,7 +57,7 @@ func (a *ArrayAst) verifyNextType(ntp NodeType) bool {
 // arrayParser parses the remained part of an array after tkArrayStart is found before.
 func (p *Parser) arrayParser() *Value {
 	var ar ArrayAst
-	
+
 	for {
 		tk := p.nextExceptWhitespace()
 		if tk.tp == tkArrayEnd {
@@ -67,13 +67,13 @@ func (p *Parser) arrayParser() *Value {
 			}
 		}
 		val := p.parse(tk)
-		
+
 		if ar.verifyNextType(val.NodeType) {
 			ar.values = append(ar.values, *val)
 		} else {
 			panic("inconsistent array value type")
 		}
-		
+
 		// check whether an array ends
 		then := p.nextExceptWhitespace()
 		if then.tp == tkArrayEnd {
@@ -84,7 +84,7 @@ func (p *Parser) arrayParser() *Value {
 			panic("invalid token after colon")
 		}
 	}
-	
+
 	return &Value{
 		NodeType: Array,
 		AstValue: &ar,
@@ -95,7 +95,7 @@ func (p *Parser) arrayParser() *Value {
 func (p *Parser) objectParser() *Value {
 	var v ObjectAst
 	v.m = map[Value]Value{}
-	
+
 	for {
 		start := p.nextExceptWhitespace()
 		// an object is empty {}
@@ -105,23 +105,23 @@ func (p *Parser) objectParser() *Value {
 				AstValue: &v,
 			}
 		}
-		
+
 		if start.tp != tkString {
 			panic("Invalid json schema for key")
 		}
-		
+
 		key := literal(p.bs, start)
-		
+
 		if tkColon != p.nextExceptWhitespace().tp {
 			panic("invalid json schema after key")
 		}
 		if _, ok := v.m[*key]; ok {
 			panic("duplicated key")
 		}
-		
+
 		val := p.parse(p.nextExceptWhitespace())
 		v.m[*key] = *val
-		
+
 		// check whether an object ends
 		// todo: refine me: the logic here is duplicated with the beginning of the for loop
 		then := p.nextExceptWhitespace()
@@ -133,7 +133,7 @@ func (p *Parser) objectParser() *Value {
 			panic("invalid token after colon")
 		}
 	}
-	
+
 	return &Value{
 		NodeType: Object,
 		AstValue: &v,
@@ -158,7 +158,7 @@ func (p *Parser) next(skips ...Type) token {
 		}
 		return false
 	}
-	
+
 	tk := p.l.Scan()
 	for shouldSkip(tk.tp) {
 		tk = p.l.Scan()
