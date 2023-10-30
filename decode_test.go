@@ -66,12 +66,11 @@ func Test_Unmarshal_Number(t *testing.T) {
 			destination: new(uint32),
 			expected:    uint32(4294967295),
 		},
-		// todo: fix it, #9
-		// "uint64": {
-		// 	input:       "18446744073709551615",
-		// 	destination: new(uint64),
-		// 	expected:    uint64(18446744073709551615),
-		// },
+		"uint64": {
+			input:       "18446744073709551615",
+			destination: new(uint64),
+			expected:    uint64(18446744073709551615),
+		},
 		"float32": {
 			input:       "2e3",
 			destination: new(float32),

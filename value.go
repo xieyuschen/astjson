@@ -40,6 +40,47 @@ type NumberAst struct {
 	i  int64
 }
 
+// getInt64 returns the values inside a NumberAst, it's possible to
+// lose precise for float64 or overflow for uint64
+func (n NumberAst) getInt64() int64 {
+	switch n.nt {
+	case integer:
+		return n.i
+	case unsignedInteger:
+		return int64(n.u)
+	case floatNumber:
+		// precise is acceptable because users need us to cast it.
+		return int64(n.f)
+	}
+	panic("")
+}
+
+func (n NumberAst) getUint64() uint64 {
+	switch n.nt {
+	case integer:
+		return uint64(n.i)
+	case unsignedInteger:
+		return n.u
+	case floatNumber:
+		// precise is acceptable because users need us to cast it.
+		return uint64(n.f)
+	}
+	panic("")
+}
+
+func (n NumberAst) getFloat64() float64 {
+	switch n.nt {
+	case integer:
+		return float64(n.i)
+	case unsignedInteger:
+		return float64(n.u)
+	case floatNumber:
+		// todo: check further whether this logic is correct
+		return n.f
+	}
+	panic("")
+}
+
 type NullAst struct{}
 type BoolAst bool
 type StringAst string
