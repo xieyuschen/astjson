@@ -6,6 +6,7 @@ import (
 )
 
 // Type represents the token type
+//go:generate stringer -type=Type
 type Type uint
 
 const (
@@ -23,37 +24,24 @@ const (
 	tkColon
 )
 
-var roster = map[Type]string{
-	tkWhiteSpace:  "tkWhiteSpace",
-	tkString:      "tkString",
-	tkNumber:      "tkNumber",
-	tkBool:        "tkBool",
-	tkNull:        "tkNull",
-	tkEOF:         "tkEOF",
-	tkObjectStart: "tkObjectStart",
-	tkObjectEnd:   "tkObjectEnd",
-	tkComma:       "tkComma",
-	tkColon:       "tkColon",
-}
-
-func (t Type) String() string {
-	return roster[t]
-}
-
 // token represents the json token.
 // currently, token only supports to the limited json value and limits primitive
 // types only.
 type token struct {
 	tp Type
-
+	
 	// the token value is [ leftPos, rightPos)
 	// index starts at 0
 	leftPos, rightPos int
+	
+	// hasDash and isFloat only make sense for tkNumber because we don't
+	// want to lose precise
+	hasDash, isFloat bool
 }
 
 type lexer struct {
 	bs []byte
-
+	
 	// todo: try to use uint
 	curPos  int
 	lastPos int
@@ -76,7 +64,7 @@ func (l *lexer) Reset() {
 func (l *lexer) Scan() token {
 	// align sentries
 	l.lastPos = l.curPos
-
+	
 	if l.curPos == len(l.bs) {
 		return token{
 			tp:       tkEOF,
@@ -84,9 +72,9 @@ func (l *lexer) Scan() token {
 			rightPos: l.curPos,
 		}
 	}
-
+	
 	c := l.bs[l.curPos]
-
+	
 	switch c {
 	case '{':
 		l.curPos += 1
@@ -155,7 +143,7 @@ func (l *lexer) Scan() token {
 func (l *lexer) stringType() token {
 	// move next to the starting "
 	l.curPos++
-
+	
 	for l.curPos < len(l.bs) {
 		if l.bs[l.curPos] == '\\' {
 			l.curPos++
@@ -179,7 +167,7 @@ func (l *lexer) stringType() token {
 			l.curPos++
 			continue
 		}
-
+		
 		// move curPos right because we need to conclude " as wel
 		l.curPos++
 		return token{
@@ -202,7 +190,7 @@ func (l *lexer) boolType() token {
 			rightPos: l.curPos,
 		}
 	}
-
+	
 	if string(l.bs[l.lastPos:l.curPos+len("false")]) == "false" {
 		l.curPos += len("false")
 		return token{
@@ -211,7 +199,7 @@ func (l *lexer) boolType() token {
 			rightPos: l.curPos,
 		}
 	}
-
+	
 	panic("not a valid json bool type")
 }
 
@@ -219,7 +207,7 @@ func (l *lexer) boolType() token {
 func (l *lexer) nullType() token {
 	l.curPos += 4
 	str := string(l.bs[l.lastPos:l.curPos])
-
+	
 	if str == "null" {
 		return token{
 			tp:       tkNull,
@@ -227,28 +215,33 @@ func (l *lexer) nullType() token {
 			rightPos: l.curPos,
 		}
 	}
-
+	
 	panic("not a valid null value")
 }
 
 func (l *lexer) numberType() token {
+	t := token{
+		tp:      tkNumber,
+		leftPos: l.lastPos,
+	}
 	switch l.bs[l.curPos] {
-	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-':
+	case '-':
+		t.hasDash = true
+		fallthrough
+	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		l.curPos++
 	Loop:
 		for ; l.curPos < len(l.bs); l.curPos++ {
 			switch l.bs[l.curPos] {
-			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-				'.', 'e', 'E', '+', '-':
+			case '.', 'e', 'E':
+				t.isFloat = true
+			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-':
 			default:
 				break Loop
 			}
 		}
 	}
-
-	return token{
-		tp:       tkNumber,
-		leftPos:  l.lastPos,
-		rightPos: l.curPos,
-	}
+	
+	t.rightPos = l.curPos
+	return t
 }

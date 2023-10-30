@@ -2,7 +2,7 @@ package astjson
 
 import (
 	"testing"
-
+	
 	"github.com/stretchr/testify/assert"
 )
 
@@ -88,16 +88,20 @@ func Test_Scan_Simple_Tokens(t *testing.T) {
 		}},
 		"negative integer": {input: "-999", expected: token{
 			tp:       tkNumber,
+			hasDash:  true,
 			leftPos:  0,
 			rightPos: 4,
 		}},
 		"positive float": {input: "0.99", expected: token{
 			tp:       tkNumber,
+			isFloat:  true,
 			leftPos:  0,
 			rightPos: 4,
 		}},
 		"negative float": {input: "-0.99", expected: token{
 			tp:       tkNumber,
+			hasDash:  true,
+			isFloat:  true,
 			leftPos:  0,
 			rightPos: 5,
 		}},
@@ -232,18 +236,18 @@ func Test_Scan_Multiple_Tokens(t *testing.T) {
 			l := newLexer([]byte(tc.input))
 			var counter, lastPos int
 			var tk token
-
+			
 			for tk.tp != tkEOF {
 				assert.LessOrEqual(t, counter, len(tc.expected))
 				tk = l.Scan()
-
+				
 				assert.Equal(t, tc.expected[counter].String(), tk.tp.String(), "token types don't match")
 				assert.Equal(t, lastPos, tk.leftPos, "positions are wrong")
 				t.Logf("validation from [%d,%d) has passed for token type: %s",
 					lastPos, tk.rightPos, tk.tp.String())
 				lastPos = tk.rightPos
 				counter++
-
+				
 			}
 		})
 	}
@@ -269,5 +273,5 @@ func Test_Scan_Panic(t *testing.T) {
 			})
 		})
 	}
-
+	
 }
