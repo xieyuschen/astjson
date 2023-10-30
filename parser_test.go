@@ -2,7 +2,7 @@ package astjson
 
 import (
 	"testing"
-
+	
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,23 +18,35 @@ func Test_Parse_Literal(t *testing.T) {
 		}},
 		"positive integer": {input: "999", expected: &Value{
 			NodeType: Number,
-			AstValue: NumberAst(999),
+			AstValue: NumberAst{
+				nt: unsignedInteger,
+				u:  999,
+			},
 		}},
 		"negative integer": {input: "-999", expected: &Value{
 			NodeType: Number,
-			AstValue: NumberAst(-999),
+			AstValue: NumberAst{
+				nt: integer,
+				i:  -999,
+			},
 		}},
 		"zero": {input: "0", expected: &Value{
 			NodeType: Number,
-			AstValue: NumberAst(0),
+			AstValue: NumberAst{nt: unsignedInteger, u: 0},
 		}},
 		"positive float": {input: "0.99", expected: &Value{
 			NodeType: Number,
-			AstValue: NumberAst(0.99),
+			AstValue: NumberAst{
+				nt: floatNumber,
+				f:  0.99,
+			},
 		}},
 		"negative float": {input: "-0.99", expected: &Value{
 			NodeType: Number,
-			AstValue: NumberAst(-0.99),
+			AstValue: NumberAst{
+				nt: floatNumber,
+				f:  -0.99,
+			},
 		}},
 		"null": {input: "null", expected: &Value{
 			NodeType: Null,
@@ -87,7 +99,10 @@ func Test_Parse_Object(t *testing.T) {
 			expected: &Value{
 				NodeType: Object,
 				AstValue: &ObjectAst{map[Value]Value{
-					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Number, AstValue: NumberAst(123)}},
+					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Number, AstValue: NumberAst{
+						nt: unsignedInteger,
+						u:  123,
+					}}},
 				},
 			},
 		},
@@ -183,9 +198,9 @@ func Test_Parse_Array(t *testing.T) {
 			expected: &Value{
 				NodeType: Array,
 				AstValue: &ArrayAst{[]Value{
-					{NodeType: Number, AstValue: NumberAst(-1)},
-					{NodeType: Number, AstValue: NumberAst(0)},
-					{NodeType: Number, AstValue: NumberAst(1)},
+					{NodeType: Number, AstValue: NumberAst{nt: integer, i: -1}},
+					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 0}},
+					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 1}},
 				}},
 			},
 		},
@@ -195,9 +210,9 @@ func Test_Parse_Array(t *testing.T) {
 			expected: &Value{
 				NodeType: Array,
 				AstValue: &ArrayAst{[]Value{
-					{NodeType: Number, AstValue: NumberAst(-0.99)},
-					{NodeType: Number, AstValue: NumberAst(0)},
-					{NodeType: Number, AstValue: NumberAst(9.99)},
+					{NodeType: Number, AstValue: NumberAst{nt: floatNumber, f: -0.99}},
+					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 0}},
+					{NodeType: Number, AstValue: NumberAst{nt: floatNumber, f: 9.99}},
 				}},
 			},
 		},
@@ -296,7 +311,7 @@ func Test_Parse_Mixture(t *testing.T) {
 				NodeType: Object,
 				AstValue: &ObjectAst{map[Value]Value{
 					Value{NodeType: String, AstValue: StringAst("str")}:   {NodeType: String, AstValue: StringAst(`123\b\t\r\n`)},
-					Value{NodeType: String, AstValue: StringAst("num")}:   {NodeType: Number, AstValue: NumberAst(123)},
+					Value{NodeType: String, AstValue: StringAst("num")}:   {NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 123}},
 					Value{NodeType: String, AstValue: StringAst("bool")}:  {NodeType: Bool, AstValue: BoolAst(true)},
 					Value{NodeType: String, AstValue: StringAst("null")}:  {NodeType: Null, AstValue: &NullAst{}},
 					Value{NodeType: String, AstValue: StringAst("empty")}: {NodeType: Object, AstValue: &ObjectAst{map[Value]Value{}}},
@@ -347,12 +362,12 @@ func Test_Parse_Mixture(t *testing.T) {
 			},
 		},
 	}
-
+	
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			value := Parse([]byte(tc.input))
 			assert.Equal(t, tc.expected, value)
 		})
 	}
-
+	
 }
