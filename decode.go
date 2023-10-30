@@ -44,20 +44,19 @@ func setBool(val *Value, dest interface{}) error {
 
 func setNumber(val *Value, dest interface{}) error {
 	kind := reflect.ValueOf(dest).Elem().Kind()
-	
+	numberAst := val.AstValue.(NumberAst)
 	switch kind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		reflect.ValueOf(dest).Elem().SetInt(int64(val.AstValue.(NumberAst)))
+		reflect.ValueOf(dest).Elem().SetInt(numberAst.getInt64())
 		return nil
 	
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		// todo: what if a negative number occurs?
-		reflect.ValueOf(dest).Elem().SetUint(uint64(val.AstValue.(NumberAst)))
+		reflect.ValueOf(dest).Elem().SetUint(numberAst.getUint64())
 		return nil
 	
 	case reflect.Float32,
 		reflect.Float64:
-		reflect.ValueOf(dest).Elem().SetFloat(float64(val.AstValue.(NumberAst)))
+		reflect.ValueOf(dest).Elem().SetFloat(numberAst.getFloat64())
 		return nil
 	}
 	panic("fail to set number")
@@ -67,21 +66,22 @@ func setNumber(val *Value, dest interface{}) error {
 // todo: support []byte and []int8
 // todo: think about whether support the implicitly cast from byte to the other types
 func setString(val *Value, dest interface{}) error {
-	kind := reflect.ValueOf(dest).Elem().Kind()
+	v := reflect.ValueOf(dest).Elem()
+	kind := v.Kind()
+	
 	strAst := val.AstValue.(StringAst)
 	switch kind {
 	case reflect.String:
-		reflect.ValueOf(dest).Elem().SetString(string(strAst))
+		v.SetString(string(strAst))
 		return nil
 	case reflect.Slice:
-		reflect.ValueOf(dest).Elem().SetBytes([]byte(strAst))
+		v.SetBytes([]byte(strAst))
 		return nil
 	case reflect.Array:
-		l := reflect.ValueOf(dest).Len()
+		l := v.Len()
 		bs := []byte(strAst)
-		
 		for i := 0; i < l; i++ {
-			reflect.ValueOf(dest).Elem().Index(i).Set(reflect.ValueOf(bs[i]))
+			v.Index(i).Set(reflect.ValueOf(bs[i]))
 		}
 		
 		return nil
