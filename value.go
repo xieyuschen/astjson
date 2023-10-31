@@ -86,7 +86,14 @@ type BoolAst bool
 type StringAst string
 
 type ObjectAst struct {
-	m map[Value]Value
+	m map[string]Value
+}
+
+func NewStrValue(str string) Value {
+	return Value{
+		NodeType: String,
+		AstValue: str,
+	}
 }
 
 type ArrayAst struct {

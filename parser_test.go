@@ -80,7 +80,7 @@ func Test_Parse_Object(t *testing.T) {
 			input: "{}",
 			expected: &Value{
 				NodeType: Object,
-				AstValue: &ObjectAst{map[Value]Value{}},
+				AstValue: &ObjectAst{map[string]Value{}},
 			},
 		},
 		{
@@ -88,8 +88,8 @@ func Test_Parse_Object(t *testing.T) {
 			input: `{"123": "123"}`,
 			expected: &Value{
 				NodeType: Object,
-				AstValue: &ObjectAst{map[Value]Value{
-					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: String, AstValue: StringAst("123")}},
+				AstValue: &ObjectAst{map[string]Value{
+					"123": {NodeType: String, AstValue: StringAst("123")}},
 				},
 			},
 		},
@@ -98,8 +98,8 @@ func Test_Parse_Object(t *testing.T) {
 			input: `{"123": 123}`,
 			expected: &Value{
 				NodeType: Object,
-				AstValue: &ObjectAst{map[Value]Value{
-					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Number, AstValue: NumberAst{
+				AstValue: &ObjectAst{map[string]Value{
+					"123": {NodeType: Number, AstValue: NumberAst{
 						nt: unsignedInteger,
 						u:  123,
 					}}},
@@ -111,8 +111,8 @@ func Test_Parse_Object(t *testing.T) {
 			input: `{"123": true}`,
 			expected: &Value{
 				NodeType: Object,
-				AstValue: &ObjectAst{map[Value]Value{
-					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Bool, AstValue: BoolAst(true)}},
+				AstValue: &ObjectAst{map[string]Value{
+					"123": {NodeType: Bool, AstValue: BoolAst(true)}},
 				},
 			},
 		},
@@ -121,8 +121,8 @@ func Test_Parse_Object(t *testing.T) {
 			input: `{"123": false}`,
 			expected: &Value{
 				NodeType: Object,
-				AstValue: &ObjectAst{map[Value]Value{
-					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Bool, AstValue: BoolAst(false)}},
+				AstValue: &ObjectAst{map[string]Value{
+					"123": {NodeType: Bool, AstValue: BoolAst(false)}},
 				},
 			},
 		},
@@ -131,8 +131,8 @@ func Test_Parse_Object(t *testing.T) {
 			input: `{"123": null}`,
 			expected: &Value{
 				NodeType: Object,
-				AstValue: &ObjectAst{map[Value]Value{
-					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Null, AstValue: &NullAst{}}},
+				AstValue: &ObjectAst{map[string]Value{
+					"123": {NodeType: Null, AstValue: &NullAst{}}},
 				},
 			},
 		},
@@ -141,9 +141,9 @@ func Test_Parse_Object(t *testing.T) {
 			input: `{"123": null, "12": null}`,
 			expected: &Value{
 				NodeType: Object,
-				AstValue: &ObjectAst{map[Value]Value{
-					Value{NodeType: String, AstValue: StringAst("123")}: {NodeType: Null, AstValue: &NullAst{}},
-					Value{NodeType: String, AstValue: StringAst("12")}:  {NodeType: Null, AstValue: &NullAst{}},
+				AstValue: &ObjectAst{map[string]Value{
+					"123": {NodeType: Null, AstValue: &NullAst{}},
+					"12":  {NodeType: Null, AstValue: &NullAst{}},
 				},
 				},
 			},
@@ -309,53 +309,53 @@ func Test_Parse_Mixture(t *testing.T) {
 			}`,
 			expected: &Value{
 				NodeType: Object,
-				AstValue: &ObjectAst{map[Value]Value{
-					Value{NodeType: String, AstValue: StringAst("str")}:   {NodeType: String, AstValue: StringAst(`123\b\t\r\n`)},
-					Value{NodeType: String, AstValue: StringAst("num")}:   {NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 123}},
-					Value{NodeType: String, AstValue: StringAst("bool")}:  {NodeType: Bool, AstValue: BoolAst(true)},
-					Value{NodeType: String, AstValue: StringAst("null")}:  {NodeType: Null, AstValue: &NullAst{}},
-					Value{NodeType: String, AstValue: StringAst("empty")}: {NodeType: Object, AstValue: &ObjectAst{map[Value]Value{}}},
-					Value{NodeType: String, AstValue: StringAst("embed-object")}: {
+				AstValue: &ObjectAst{map[string]Value{
+					"str":   {NodeType: String, AstValue: StringAst(`123\b\t\r\n`)},
+					"num":   {NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 123}},
+					"bool":  {NodeType: Bool, AstValue: BoolAst(true)},
+					"null":  {NodeType: Null, AstValue: &NullAst{}},
+					"empty": {NodeType: Object, AstValue: &ObjectAst{map[string]Value{}}},
+					"embed-object": {
 						NodeType: Object,
-						AstValue: &ObjectAst{map[Value]Value{
-							Value{NodeType: String, AstValue: StringAst("hello")}: {NodeType: String, AstValue: StringAst("world")},
+						AstValue: &ObjectAst{map[string]Value{
+							"hello": {NodeType: String, AstValue: StringAst("world")},
 						}}},
-					Value{NodeType: String, AstValue: StringAst("array-in-object")}: {
+					"array-in-object": {
 						NodeType: Object,
-						AstValue: &ObjectAst{map[Value]Value{
-							Value{NodeType: String, AstValue: StringAst("hello")}: {
+						AstValue: &ObjectAst{map[string]Value{
+							"hello": {
 								NodeType: Array,
 								AstValue: &ArrayAst{values: []Value{{NodeType: String, AstValue: StringAst("world")}}}}},
 						}},
-					Value{NodeType: String, AstValue: StringAst("array")}: {
+					"array": {
 						NodeType: Array,
 						AstValue: &ArrayAst{[]Value{
 							{NodeType: String, AstValue: StringAst("world")},
 						}},
 					},
-					Value{NodeType: String, AstValue: StringAst("empty-array")}: {
+					"empty-array": {
 						NodeType: Array,
 						AstValue: &ArrayAst{},
 					},
-					Value{NodeType: String, AstValue: StringAst("embed-empty-array")}: {
+					"embed-empty-array": {
 						NodeType: Array,
 						AstValue: &ArrayAst{[]Value{
 							{NodeType: Array, AstValue: &ArrayAst{}},
 							{NodeType: Array, AstValue: &ArrayAst{}},
 						}},
 					},
-					Value{NodeType: String, AstValue: StringAst("array-empty-obj")}: {
+					"array-empty-obj": {
 						NodeType: Array,
 						AstValue: &ArrayAst{[]Value{
-							{NodeType: Object, AstValue: &ObjectAst{m: map[Value]Value{}}},
-							{NodeType: Object, AstValue: &ObjectAst{m: map[Value]Value{}}},
+							{NodeType: Object, AstValue: &ObjectAst{m: map[string]Value{}}},
+							{NodeType: Object, AstValue: &ObjectAst{m: map[string]Value{}}},
 						}},
 					},
-					Value{NodeType: String, AstValue: StringAst("array-obj")}: {
+					"array-obj": {
 						NodeType: Array,
 						AstValue: &ArrayAst{[]Value{
-							{NodeType: Object, AstValue: &ObjectAst{map[Value]Value{{NodeType: String, AstValue: StringAst("hello")}: {NodeType: String, AstValue: StringAst("world")}}}},
-							{NodeType: Object, AstValue: &ObjectAst{map[Value]Value{{NodeType: String, AstValue: StringAst("hello")}: {NodeType: String, AstValue: StringAst("world")}}}},
+							{NodeType: Object, AstValue: &ObjectAst{map[string]Value{"hello": {NodeType: String, AstValue: StringAst("world")}}}},
+							{NodeType: Object, AstValue: &ObjectAst{map[string]Value{"hello": {NodeType: String, AstValue: StringAst("world")}}}},
 						}},
 					},
 				}},

@@ -29,7 +29,7 @@ func (d *Decoder) unmarshal(val *Value, dest interface{}) error {
 	case String:
 		return setString(val, dest)
 	case Null:
-		return setNull(val, dest)
+		return setNull(dest)
 	case Bool:
 		return setBool(val, dest)
 	case Array:
@@ -83,7 +83,7 @@ func setArray(val *Value, dest interface{}) error {
 	return nil
 }
 
-func setNull(val *Value, dest interface{}) error {
+func setNull(dest interface{}) error {
 	// pointer owns type, we cannot assign it a nil directly
 	v := reflect.ValueOf(dest).Elem()
 	v.Set(reflect.Zero(v.Type()))
