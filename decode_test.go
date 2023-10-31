@@ -172,3 +172,62 @@ func Test_Unmarshal_Bool(t *testing.T) {
 	assert.NoError(t, NewDecoder().Unmarshal(NewParser([]byte("false")).Parse(), &b))
 	assert.False(t, b)
 }
+
+func Test_Simple_JsonArray_To_Slice(t *testing.T) {
+	i1 := make([]int, 1)
+	i3 := make([]int, 3)
+	i4 := make([]int, 4)
+	testCases := map[string]struct {
+		input    string
+		expected interface{}
+		dest     interface{}
+	}{
+		"int array": {
+			input:    "[1,2,3]",
+			expected: []int{1, 2, 3},
+			dest:     new([]int),
+		},
+		"int array with allocation 1": {
+			input:    "[1,2,3]",
+			expected: []int{1, 2, 3},
+			dest:     &i1,
+		},
+		"int array with allocation 3": {
+			input:    "[1,2,3]",
+			expected: []int{1, 2, 3},
+			dest:     &i3,
+		},
+		"int array with allocation 4": {
+			input:    "[1,2,3]",
+			expected: []int{1, 2, 3, 0},
+			dest:     &i4,
+		},
+		"float array": {
+			input:    "[-1.2,2.2,3.2]",
+			expected: []float64{-1.2, 2.2, 3.2},
+			dest:     new([]float64),
+		},
+		"bool array": {
+			input:    "[true,false,true]",
+			expected: []bool{true, false, true},
+			dest:     new([]bool),
+		},
+		"null array": {
+			input:    "[null,null]",
+			expected: []*int{nil, nil},
+			dest:     new([]*int),
+		},
+		"array int array": {
+			input:    "[[1],[2],[3]]",
+			expected: [][]int{{1}, {2}, {3}},
+			dest:     new([][]int),
+		},
+	}
+	
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			assert.NoError(t, NewDecoder().Unmarshal(NewParser([]byte(tc.input)).Parse(), tc.dest))
+			assert.Equal(t, tc.expected, reflect.ValueOf(tc.dest).Elem().Interface())
+		})
+	}
+}
