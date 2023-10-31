@@ -1,0 +1,3 @@
+ignore:
+  - "numbertype_string.go"
+  - "type_string.go"

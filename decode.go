@@ -51,28 +51,33 @@ func setArray(val *Value, dest interface{}) error {
 	}
 	
 	boundary := reflect.ValueOf(dest).Elem().Len()
-	if kind == reflect.Slice {
-		for i, value := range ars {
-			// double elem get from a pointer of array to the array element type
-			// *[]T --Elem()--> []T --Elem()--> T
-			elemType := reflect.TypeOf(dest).Elem().Elem()
-			newVal := reflect.New(elemType)
-			err := NewDecoder().unmarshal(&value, newVal.Interface())
-			if err != nil {
-				return err
-			}
-			elem := newVal.Elem()
-			if i >= boundary {
-				// retrieve the element from a pointer
-				
-				// append the element into the array,
-				// instead of the pointer to the array
-				na := reflect.Append(reflect.ValueOf(dest).Elem(), elem)
-				reflect.ValueOf(dest).Elem().Set(na)
-				continue
-			}
-			reflect.ValueOf(dest).Elem().Index(i).Set(elem)
+	
+	for i, value := range ars {
+		// all available fields in an array are filled, we needn't to continue
+		if i >= boundary && kind == reflect.Array {
+			return nil
 		}
+		
+		// double elem get from a pointer of array to the array element type
+		// *[]T --Elem()--> []T --Elem()--> T
+		elemType := reflect.TypeOf(dest).Elem().Elem()
+		newVal := reflect.New(elemType)
+		err := NewDecoder().unmarshal(&value, newVal.Interface())
+		if err != nil {
+			return err
+		}
+		elem := newVal.Elem()
+		
+		// this logic only applies to slice because array has a fixed length.
+		if i >= boundary {
+			// append the element into the array,
+			// instead of the pointer to the array
+			na := reflect.Append(reflect.ValueOf(dest).Elem(), elem)
+			reflect.ValueOf(dest).Elem().Set(na)
+			continue
+		}
+		
+		reflect.ValueOf(dest).Elem().Index(i).Set(elem)
 	}
 	
 	return nil

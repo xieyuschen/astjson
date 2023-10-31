@@ -182,45 +182,131 @@ func Test_Simple_JsonArray_To_Slice(t *testing.T) {
 		expected interface{}
 		dest     interface{}
 	}{
-		"int array": {
+		"int slice": {
 			input:    "[1,2,3]",
 			expected: []int{1, 2, 3},
 			dest:     new([]int),
 		},
-		"int array with allocation 1": {
+		"int slice with allocation 1": {
 			input:    "[1,2,3]",
 			expected: []int{1, 2, 3},
 			dest:     &i1,
 		},
-		"int array with allocation 3": {
+		"int slice with allocation 3": {
 			input:    "[1,2,3]",
 			expected: []int{1, 2, 3},
 			dest:     &i3,
 		},
-		"int array with allocation 4": {
+		"int slice with allocation 4": {
 			input:    "[1,2,3]",
 			expected: []int{1, 2, 3, 0},
 			dest:     &i4,
 		},
-		"float array": {
+		"float slice": {
 			input:    "[-1.2,2.2,3.2]",
 			expected: []float64{-1.2, 2.2, 3.2},
 			dest:     new([]float64),
 		},
-		"bool array": {
+		"bool slice": {
 			input:    "[true,false,true]",
 			expected: []bool{true, false, true},
 			dest:     new([]bool),
 		},
-		"null array": {
+		"null slice": {
 			input:    "[null,null]",
 			expected: []*int{nil, nil},
 			dest:     new([]*int),
 		},
-		"array int array": {
+		"slice int slice": {
 			input:    "[[1],[2],[3]]",
 			expected: [][]int{{1}, {2}, {3}},
 			dest:     new([][]int),
+		},
+	}
+	
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			assert.NoError(t, NewDecoder().Unmarshal(NewParser([]byte(tc.input)).Parse(), tc.dest))
+			assert.Equal(t, tc.expected, reflect.ValueOf(tc.dest).Elem().Interface())
+		})
+	}
+}
+
+func Test_Simple_JsonArray_To_Array(t *testing.T) {
+	var i1 [1]int
+	var i3 [3]int
+	var i4 [4]int
+	
+	var f1 [1]float64
+	var f3 [3]float64
+	var f4 [4]float64
+	
+	var b1 [1]bool
+	var b3 [3]bool
+	var b4 [4]bool
+	
+	var null1 [1]*int
+	var aa [2][1]int
+	
+	testCases := map[string]struct {
+		input    string
+		expected interface{}
+		dest     interface{}
+	}{
+		"int array": {
+			input:    "[1,2,3]",
+			expected: [1]int{1},
+			dest:     &i1,
+		},
+		"int array with allocation 3": {
+			input:    "[1,2,3]",
+			expected: [3]int{1, 2, 3},
+			dest:     &i3,
+		},
+		"int array with allocation 4": {
+			input:    "[1,2,3]",
+			expected: [4]int{1, 2, 3, 0},
+			dest:     &i4,
+		},
+		"float array with allocation 1": {
+			input:    "[-1.2,2.2,3.2]",
+			expected: [1]float64{-1.2},
+			dest:     &f1,
+		},
+		"float array with allocation 3": {
+			input:    "[-1.2,2.2,3.2]",
+			expected: [3]float64{-1.2, 2.2, 3.2},
+			dest:     &f3,
+		},
+		"float array with allocation 4": {
+			input:    "[-1.2,2.2,3.2]",
+			expected: [4]float64{-1.2, 2.2, 3.2, 0},
+			dest:     &f4,
+		},
+		"bool array with allocation 1": {
+			input:    "[true,false,true]",
+			expected: [1]bool{true},
+			dest:     &b1,
+		},
+		"bool array with allocation 3": {
+			input:    "[true,false,true]",
+			expected: [3]bool{true, false, true},
+			dest:     &b3,
+		},
+		"bool array with allocation 4": {
+			input:    "[true,false,true]",
+			expected: [4]bool{true, false, true, false},
+			dest:     &b4,
+		},
+		"null array with allocation 1": {
+			input:    "[null,null]",
+			expected: [1]*int{nil},
+			dest:     &null1,
+		},
+		"array int array": {
+			input:    "[[1],[1,2],[3]]",
+			expected: [2][1]int{{1}, {1}},
+			dest:     &aa,
 		},
 	}
 	
