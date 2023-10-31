@@ -96,7 +96,7 @@ func (p *Parser) arrayParser() *Value {
 // objectParser parses the remained part of an array after tkObjectStart is found before.
 func (p *Parser) objectParser() *Value {
 	var v ObjectAst
-	v.m = map[Value]Value{}
+	v.m = map[string]Value{}
 	
 	for {
 		start := p.nextExceptWhitespace()
@@ -111,18 +111,18 @@ func (p *Parser) objectParser() *Value {
 		if start.tp != tkString {
 			panic("Invalid json schema for key")
 		}
-		
-		key := literal(p.bs, start)
+		value := literal(p.bs, start)
+		key := string(value.AstValue.(StringAst))
 		
 		if tkColon != p.nextExceptWhitespace().tp {
 			panic("invalid json schema after key")
 		}
-		if _, ok := v.m[*key]; ok {
+		if _, ok := v.m[key]; ok {
 			panic("duplicated key")
 		}
 		
 		val := p.parse(p.nextExceptWhitespace())
-		v.m[*key] = *val
+		v.m[key] = *val
 		
 		// check whether an object ends
 		// todo: refine me: the logic here is duplicated with the beginning of the for loop
