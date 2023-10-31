@@ -5,6 +5,10 @@ import (
 	"reflect"
 )
 
+const (
+	JSONTAG = "json"
+)
+
 type Decoder struct{}
 
 func NewDecoder() *Decoder {
@@ -35,7 +39,35 @@ func (d *Decoder) unmarshal(val *Value, dest interface{}) error {
 	case Array:
 		return setArray(val, dest)
 	case Object:
-		return nil
+		return setObject(val, dest)
+	}
+	return nil
+}
+
+func setObject(val *Value, dest interface{}) error {
+	obj := val.AstValue.(*ObjectAst)
+	// *T --> T
+	rval := reflect.ValueOf(dest).Elem()
+	rtyp := reflect.TypeOf(dest).Elem()
+
+	var err error
+	for index := 0; index < rtyp.NumField(); index++ {
+		tag := rtyp.Field(index).Tag.Get(JSONTAG)
+		if tag == "" {
+			continue
+		}
+		astVal := obj.m[tag]
+
+		// construct a pointer type of field type to store the data
+		// we cannot pass the field directly because it's not a reference but a value, however,
+		// we want to change the value itself. So pass it in side unmarshal as an interface doesn't work.
+		fieldVal := reflect.New(rtyp.Field(index).Type)
+		err = NewDecoder().unmarshal(&astVal, fieldVal.Interface())
+		if err != nil {
+			return err
+		}
+
+		rval.Field(index).Set(fieldVal.Elem())
 	}
 	return nil
 }
@@ -43,21 +75,21 @@ func (d *Decoder) unmarshal(val *Value, dest interface{}) error {
 // setArray sets the json array into golang a slice or an array.
 func setArray(val *Value, dest interface{}) error {
 	ars := val.AstValue.(*ArrayAst).values
-	
+
 	kind := reflect.TypeOf(dest).Elem().Kind()
 	if kind != reflect.Array && kind != reflect.Slice {
 		// todo: ignore error or report it?
 		return nil
 	}
-	
+
 	boundary := reflect.ValueOf(dest).Elem().Len()
-	
+
 	for i, value := range ars {
 		// all available fields in an array are filled, we needn't to continue
 		if i >= boundary && kind == reflect.Array {
 			return nil
 		}
-		
+
 		// double elem get from a pointer of array to the array element type
 		// *[]T --Elem()--> []T --Elem()--> T
 		elemType := reflect.TypeOf(dest).Elem().Elem()
@@ -67,7 +99,7 @@ func setArray(val *Value, dest interface{}) error {
 			return err
 		}
 		elem := newVal.Elem()
-		
+
 		// this logic only applies to slice because array has a fixed length.
 		if i >= boundary {
 			// append the element into the array,
@@ -76,10 +108,10 @@ func setArray(val *Value, dest interface{}) error {
 			reflect.ValueOf(dest).Elem().Set(na)
 			continue
 		}
-		
+
 		reflect.ValueOf(dest).Elem().Index(i).Set(elem)
 	}
-	
+
 	return nil
 }
 
@@ -102,11 +134,11 @@ func setNumber(val *Value, dest interface{}) error {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		reflect.ValueOf(dest).Elem().SetInt(numberAst.getInt64())
 		return nil
-	
+
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		reflect.ValueOf(dest).Elem().SetUint(numberAst.getUint64())
 		return nil
-	
+
 	case reflect.Float32,
 		reflect.Float64:
 		reflect.ValueOf(dest).Elem().SetFloat(numberAst.getFloat64())
@@ -121,7 +153,7 @@ func setNumber(val *Value, dest interface{}) error {
 func setString(val *Value, dest interface{}) error {
 	v := reflect.ValueOf(dest).Elem()
 	kind := v.Kind()
-	
+
 	strAst := val.AstValue.(StringAst)
 	switch kind {
 	case reflect.String:
@@ -136,7 +168,6 @@ func setString(val *Value, dest interface{}) error {
 		for i := 0; i < l; i++ {
 			v.Index(i).Set(reflect.ValueOf(bs[i]))
 		}
-		
 		return nil
 	}
 	panic("fail to set string")

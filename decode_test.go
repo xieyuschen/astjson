@@ -3,7 +3,7 @@ package astjson
 import (
 	"reflect"
 	"testing"
-	
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,7 +15,7 @@ func Test_Non_Pointer(t *testing.T) {
 }
 
 func Test_Unmarshal_Number(t *testing.T) {
-	
+
 	testCases := map[string]struct {
 		input       string
 		destination interface{}
@@ -82,12 +82,12 @@ func Test_Unmarshal_Number(t *testing.T) {
 			expected:    2e3,
 		},
 	}
-	
+
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			v := NewParser([]byte(tc.input)).Parse()
 			assert.NoError(t, NewDecoder().Unmarshal(v, tc.destination))
-			
+
 			// destVal stands the value of pointer underlying tc.destination interface.
 			destVal := reflect.ValueOf(tc.destination).Elem().Interface()
 			assert.Equal(t, tc.expected, destVal)
@@ -121,12 +121,12 @@ func Test_Unmarshal_String_and_Slice(t *testing.T) {
 			expected:    []byte("hello-world"),
 		},
 	}
-	
+
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			v := NewParser([]byte(tc.input)).Parse()
 			assert.NoError(t, NewDecoder().Unmarshal(v, tc.destination))
-			
+
 			// destVal stands the value of pointer underlying tc.destination interface.
 			destVal := reflect.ValueOf(tc.destination).Elem().Interface()
 			assert.Equal(t, tc.expected, destVal)
@@ -138,26 +138,26 @@ func Test_Unmarshal_Array(t *testing.T) {
 	var ar [3]byte
 	v := NewParser([]byte(`"hello-world"`)).Parse()
 	assert.NoError(t, NewDecoder().Unmarshal(v, &ar))
-	
+
 	expected := [3]byte{'h', 'e', 'l'}
 	assert.Equal(t, expected, ar)
 }
 
 func Test_Unmarshal_Null(t *testing.T) {
 	v := NewParser([]byte("null")).Parse()
-	
+
 	i := 1
 	var ip = &i
 	var ei *int = nil
 	assert.NoError(t, NewDecoder().Unmarshal(v, &ip))
 	assert.Equal(t, ei, ip)
-	
+
 	tr := true
 	var bp = &tr
 	assert.NoError(t, NewDecoder().Unmarshal(v, &bp))
 	var bi *bool = nil
 	assert.Equal(t, bi, bp)
-	
+
 	type tmp struct{}
 	var tmpp = &tmp{}
 	assert.NoError(t, NewDecoder().Unmarshal(v, &tmpp))
@@ -223,7 +223,7 @@ func Test_Simple_JsonArray_To_Slice(t *testing.T) {
 			dest:     new([][]int),
 		},
 	}
-	
+
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			assert.NoError(t, NewDecoder().Unmarshal(NewParser([]byte(tc.input)).Parse(), tc.dest))
@@ -236,18 +236,18 @@ func Test_Simple_JsonArray_To_Array(t *testing.T) {
 	var i1 [1]int
 	var i3 [3]int
 	var i4 [4]int
-	
+
 	var f1 [1]float64
 	var f3 [3]float64
 	var f4 [4]float64
-	
+
 	var b1 [1]bool
 	var b3 [3]bool
 	var b4 [4]bool
-	
+
 	var null1 [1]*int
 	var aa [2][1]int
-	
+
 	testCases := map[string]struct {
 		input    string
 		expected interface{}
@@ -309,11 +309,71 @@ func Test_Simple_JsonArray_To_Array(t *testing.T) {
 			dest:     &aa,
 		},
 	}
-	
+
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			assert.NoError(t, NewDecoder().Unmarshal(NewParser([]byte(tc.input)).Parse(), tc.dest))
 			assert.Equal(t, tc.expected, reflect.ValueOf(tc.dest).Elem().Interface())
 		})
 	}
+}
+
+func Test_Simple_Object(t *testing.T) {
+	type (
+		Sub struct {
+			ArrayInt []int  `json:"array_int"`
+			Str      string `json:"str"`
+		}
+		Nest struct {
+			Hello string `json:"hello"`
+		}
+		demo struct {
+			Str       string  `json:"str"`
+			Int       int     `json:"int"`
+			Float64   float64 `json:"float64"`
+			Bool      bool    `json:"bool"`
+			Null      *int    `json:"null"`
+			ArrayInt  []int   `json:"array_int"`
+			ArrayInt1 [1]int  `json:"array_int1"`
+			Sub       Sub     `json:"sub"`
+			// todo: support nested case
+			// Nest
+		}
+	)
+
+	var p *int
+	expected := demo{
+		Str:       "str",
+		Int:       999,
+		Float64:   0.99,
+		Bool:      true,
+		Null:      p,
+		ArrayInt:  []int{-1, 0, 1},
+		ArrayInt1: [1]int{-1},
+		Sub: Sub{
+			ArrayInt: []int{-1, 0, 1},
+			Str:      "str",
+		},
+		// Nest: Nest{Hello: "hello"},
+	}
+	jsonStr := `
+{
+  "str": "str",
+  "int": 999,
+  "float64": 0.99,
+  "bool": true,
+  "null": null,
+  "array_int": [-1,0,1],
+  "array_int1": [-1,0,1],
+  "sub": {
+    "array_int": [-1,0,1],
+    "str": "str"
+  },
+  "hello": "hello"
+}
+`
+
+	var d demo
+	assert.NoError(t, NewDecoder().Unmarshal(NewParser([]byte(jsonStr)).Parse(), &d))
+	assert.Equal(t, expected, d)
 }
