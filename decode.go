@@ -17,6 +17,12 @@ func (d *Decoder) Unmarshal(val *Value, dest interface{}) error {
 	if !isPointer(dest) {
 		return errors.New("dest must be a pointer")
 	}
+	return d.unmarshal(val, dest)
+}
+
+// todo: think about using reflect.Value instead of interface{} as the type of dest
+func (d *Decoder) unmarshal(val *Value, dest interface{}) error {
+	// todo: currently I only consider the valid conversion, need ensure behaviors if fail
 	switch val.NodeType {
 	case Number:
 		return setNumber(val, dest)
@@ -26,7 +32,49 @@ func (d *Decoder) Unmarshal(val *Value, dest interface{}) error {
 		return setNull(val, dest)
 	case Bool:
 		return setBool(val, dest)
+	case Array:
+		return setArray(val, dest)
+	case Object:
+		return nil
 	}
+	return nil
+}
+
+// setArray sets the json array into golang a slice or an array.
+func setArray(val *Value, dest interface{}) error {
+	ars := val.AstValue.(*ArrayAst).values
+	
+	kind := reflect.TypeOf(dest).Elem().Kind()
+	if kind != reflect.Array && kind != reflect.Slice {
+		// todo: ignore error or report it?
+		return nil
+	}
+	
+	boundary := reflect.ValueOf(dest).Elem().Len()
+	if kind == reflect.Slice {
+		for i, value := range ars {
+			// double elem get from a pointer of array to the array element type
+			// *[]T --Elem()--> []T --Elem()--> T
+			elemType := reflect.TypeOf(dest).Elem().Elem()
+			newVal := reflect.New(elemType)
+			err := NewDecoder().unmarshal(&value, newVal.Interface())
+			if err != nil {
+				return err
+			}
+			elem := newVal.Elem()
+			if i >= boundary {
+				// retrieve the element from a pointer
+				
+				// append the element into the array,
+				// instead of the pointer to the array
+				na := reflect.Append(reflect.ValueOf(dest).Elem(), elem)
+				reflect.ValueOf(dest).Elem().Set(na)
+				continue
+			}
+			reflect.ValueOf(dest).Elem().Index(i).Set(elem)
+		}
+	}
+	
 	return nil
 }
 
