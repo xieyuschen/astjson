@@ -15,7 +15,7 @@ const (
 // Value is the concrete AST representation
 type Value struct {
 	NodeType
-	
+
 	// AstValue stores the real value of an AST Value
 	// the literal type(Number, String, Bool and Null) stores them by value
 	// the Object and Array stores them by pointer

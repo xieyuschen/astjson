@@ -2,7 +2,7 @@ package astjson
 
 import (
 	"testing"
-	
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -362,12 +362,12 @@ func Test_Parse_Mixture(t *testing.T) {
 			},
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			value := Parse([]byte(tc.input))
 			assert.Equal(t, tc.expected, value)
 		})
 	}
-	
+
 }
