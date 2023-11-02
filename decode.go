@@ -6,13 +6,14 @@ import (
 )
 
 const (
-	JSONTAG = "json"
+	jsonTAG = "json"
 )
 
 type Decoder struct{}
 
 func NewDecoder() *Decoder {
-	return &Decoder{}
+	d := &Decoder{}
+	return d
 }
 
 // Unmarshal decodes the AST to a structure.
@@ -21,6 +22,7 @@ func (d *Decoder) Unmarshal(val *Value, dest interface{}) error {
 	if !isPointer(dest) {
 		return errors.New("dest must be a pointer")
 	}
+
 	return d.unmarshal(val, dest)
 }
 
@@ -54,7 +56,7 @@ func setObject(val *Value, dest interface{}) error {
 	for index := 0; index < rtyp.NumField(); index++ {
 
 		fieldTyp := rtyp.Field(index)
-		tag := fieldTyp.Tag.Get(JSONTAG)
+		tag := fieldTyp.Tag.Get(jsonTAG)
 		if tag == "" && !fieldTyp.Anonymous {
 			continue
 		}
@@ -147,16 +149,16 @@ func setNumber(val *Value, dest interface{}) error {
 	numberAst := val.AstValue.(NumberAst)
 	switch kind {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		reflect.ValueOf(dest).Elem().SetInt(numberAst.getInt64())
+		reflect.ValueOf(dest).Elem().SetInt(numberAst.GetInt64())
 		return nil
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		reflect.ValueOf(dest).Elem().SetUint(numberAst.getUint64())
+		reflect.ValueOf(dest).Elem().SetUint(numberAst.GetUint64())
 		return nil
 
 	case reflect.Float32,
 		reflect.Float64:
-		reflect.ValueOf(dest).Elem().SetFloat(numberAst.getFloat64())
+		reflect.ValueOf(dest).Elem().SetFloat(numberAst.GetFloat64())
 		return nil
 	}
 	panic("fail to set number")
