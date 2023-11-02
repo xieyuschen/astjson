@@ -336,8 +336,7 @@ func Test_Simple_Object(t *testing.T) {
 			ArrayInt  []int   `json:"array_int"`
 			ArrayInt1 [1]int  `json:"array_int1"`
 			Sub       Sub     `json:"sub"`
-			// todo: support nested case
-			// Nest
+			Nest
 		}
 	)
 
@@ -354,7 +353,7 @@ func Test_Simple_Object(t *testing.T) {
 			ArrayInt: []int{-1, 0, 1},
 			Str:      "str",
 		},
-		// Nest: Nest{Hello: "hello"},
+		Nest: Nest{Hello: "hello"},
 	}
 	jsonStr := `
 {
