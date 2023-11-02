@@ -52,10 +52,25 @@ func setObject(val *Value, dest interface{}) error {
 
 	var err error
 	for index := 0; index < rtyp.NumField(); index++ {
-		tag := rtyp.Field(index).Tag.Get(JSONTAG)
-		if tag == "" {
+
+		fieldTyp := rtyp.Field(index)
+		tag := fieldTyp.Tag.Get(JSONTAG)
+		if tag == "" && !fieldTyp.Anonymous {
 			continue
 		}
+
+		// handle embedded fields
+		if fieldTyp.Anonymous {
+			fieldVal := reflect.New(fieldTyp.Type)
+			err = NewDecoder().unmarshal(val, fieldVal.Interface())
+			if err != nil {
+				return err
+			}
+
+			rval.Field(index).Set(fieldVal.Elem())
+			continue
+		}
+
 		astVal := obj.m[tag]
 
 		// construct a pointer type of field type to store the data
