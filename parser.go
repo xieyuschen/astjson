@@ -181,13 +181,16 @@ func literal(bs []byte, tk token) *Value {
 	case tkString:
 		v.NodeType = String
 		// remove left and right "
+		// todo: check whether use pointer
 		v.AstValue = StringAst(bs[tk.leftPos+1 : tk.rightPos-1])
 	case tkBool:
 		v.NodeType = Bool
 		b, _ := strconv.ParseBool(string(bs[tk.leftPos:tk.rightPos]))
+		// todo: ditto
 		v.AstValue = BoolAst(b)
 	case tkNumber:
 		v.NodeType = Number
+		// todo: ditto
 		v.AstValue = tokenNumber(bs, tk)
 	case tkNull:
 		// the AstValue of those types are useless

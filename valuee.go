@@ -1,3 +1,5 @@
+// valuee.go is an EXPERIENTIAL file which might be removed later
+
 package astjson
 
 // ParseE is an EXPERIENTIAL function which might be removed in the long run development

@@ -40,9 +40,9 @@ type NumberAst struct {
 	i  int64
 }
 
-// getInt64 returns the values inside a NumberAst, it's possible to
+// GetInt64 returns the values inside a NumberAst, it's possible to
 // lose precise for float64 or overflow for uint64
-func (n NumberAst) getInt64() int64 {
+func (n NumberAst) GetInt64() int64 {
 	switch n.nt {
 	case integer:
 		return n.i
@@ -55,7 +55,7 @@ func (n NumberAst) getInt64() int64 {
 	panic("")
 }
 
-func (n NumberAst) getUint64() uint64 {
+func (n NumberAst) GetUint64() uint64 {
 	switch n.nt {
 	case integer:
 		return uint64(n.i)
@@ -68,7 +68,7 @@ func (n NumberAst) getUint64() uint64 {
 	panic("")
 }
 
-func (n NumberAst) getFloat64() float64 {
+func (n NumberAst) GetFloat64() float64 {
 	switch n.nt {
 	case integer:
 		return float64(n.i)
