@@ -21,7 +21,15 @@ type Validator func(value *Value) error
 type Manipulator func(value *Value)
 
 type Walker struct {
-	value              *Value
+	// head marks the head of the walker
+	head *Walker
+	next *Walker
+
+	value *Value
+	err   error
+
+	// field stores the current field for possible validator
+	field              string
 	compulsoryFields   []string
 	validators         map[string]Validator
 	optionalValidators map[string]Validator
@@ -33,6 +41,7 @@ type Walker struct {
 func NewWalker(value *Value) *Walker {
 	var w Walker
 	w.value = value
+	w.head = &w
 	w.validators = make(map[string]Validator)
 	w.optionalValidators = make(map[string]Validator)
 	w.compulsoryFields = make([]string, 0, 5)
@@ -42,6 +51,7 @@ func NewWalker(value *Value) *Walker {
 // Field requires field is compulsory during walking on current layer.
 func (w *Walker) Field(field string) *Walker {
 	w.compulsoryFields = append(w.compulsoryFields, field)
+	w.field = field
 	return w
 }
 
@@ -56,8 +66,7 @@ func (w *Walker) Validate(validator Validator) *Walker {
 		w.literalValidator = validator
 		return w
 	}
-	key := w.compulsoryFields[l-1]
-	w.validators[key] = validator
+	w.validators[w.field] = validator
 	return w
 }
 
@@ -77,6 +86,9 @@ func (w *Walker) Optional(key string, validator Validator) *Walker {
 // Walk executes all handlers submitted to it and return a final Value after walking.
 // The error is returned when validator fails, and the value is nil.
 func (w *Walker) Walk() (*Value, error) {
+	if w.err != nil {
+		return nil, w.err
+	}
 	nodeTyp := w.value.NodeType
 	switch nodeTyp {
 	case String, Number, Bool, Null, Array:
@@ -124,13 +136,34 @@ func (w *Walker) checkObject() (*Value, error) {
 	return w.value, nil
 }
 
-// Path allows you to jump inside the Value with the given path,
-// while the original walker status is still preserved in the new returned one.
-// It panics if the path doesn't exist.
-// todo: think about how to preserve the original sub-date while adding new information.
-// todo: could consider how gin framework and context design.
-// todo: don't panic, return error with a functional way.
-func (w *Walker) Path(paths ...string) *Walker {
-	// todo: implement me in the future.
+// Path jumps the walker inside the given path of ast.
+// If the given path doesn't exist, error is raised when Walk.
+// The scope of Path ends when EndPath is called.
+func (w *Walker) Path(path string) *Walker {
+	switch w.value.NodeType {
+	case Object:
+		obj := w.value.AstValue.(*ObjectAst)
+		val, ok := obj.m[path]
+		if ok {
+			n := Walker{
+				head:  w.head,
+				value: &val,
+			}
+			w.next = &n
+			return &n
+		}
+		fallthrough
+	case Number, Null, Array, String, Bool:
+		w.err = fmt.Errorf("path %s doesn't exist in nodeype %s", path, w.value.NodeType)
+		return w
+	}
 	return w
+}
+
+// EndPath returns to the root walker after Path enters a path
+func (w *Walker) EndPath() *Walker {
+	if w.err != nil {
+		w.head.err = w.err
+	}
+	return w.head
 }
