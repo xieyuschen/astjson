@@ -8,7 +8,7 @@ Astjson requires at least `go1.18` as it uses some features from reflect library
 go get github.com/xieyuschen/astjson
 ```
 
-## Usage
+## Example
 
 ```go
 package main
@@ -20,39 +20,80 @@ import (
 	"github.com/xieyuschen/astjson"
 )
 
+const (
+	jsonStr = `
+{
+  "num": 999,
+  "str": "helloworld",
+  "enabled": true ,
+  "sub1": {
+    "sub2": {
+      "key": 999
+    }
+  },
+  "name": "astjson"
+}`
+)
+
+type (
+	Sub1 struct {
+		Sub2 Sub2 `json:"sub2"`
+	}
+	Sub2 struct {
+		Key int `json:"key"`
+	}
+	demo struct {
+		Num     int    `json:"num"`
+		Str     string `json:"str"`
+		Enabled bool   `json:"enabled"`
+		Sub     Sub1   `json:"sub1"`
+	}
+)
+
 func main() {
-	jsonStr := `{ "num": 999, "str": "helloworld", "enabled": true , "name": "astjson" }`
+
 	astValue := astjson.NewParser([]byte(jsonStr)).Parse()
 
 	val, err := astjson.NewWalker(astValue).
 		// field "str" is required
 		Field("str").
 		// field "num" is optional, but if it exists the validator will be triggered
-		Optional("num", func(value *astjson.Value) error {
-			actual := value.AstValue.(astjson.NumberAst).GetInt64()
-			if actual == 999 {
-				return nil
-			}
-			return errors.New("num should be 999")
-		}).
-		Field("enabled").
-		Validate(func(value *astjson.Value) error {
-            if bool(value.AstValue.(astjson.BoolAst)) {
-                return nil
-            }
-            return errors.New("bool should be true")
-	    }).
-		ValidateKey("name", func(value *astjson.Value) error {
-			if value.AstValue.(astjson.StringAst)=="astjson"{
-				return nil
-            }
-			return errors.New("name should be astjson")
-		}).
+		Optional("num", equal999).
+		Field("enabled").Validate(isTrue).
+		Path("sub1").Path("sub2").Validate(equal999).EndPath().
+		ValidateKey("name", hasAstjsonName).
 		Walk()
 
-	fmt.Println(val, err)
+	if err != nil {
+		panic(err)
+	}
+	var d demo
+	_ = astjson.NewDecoder().Unmarshal(val, &d)
+	fmt.Println(d)
+}
+
+func equal999(value *astjson.Value) error {
+	actual := value.AstValue.(astjson.NumberAst).GetInt64()
+	if actual == 999 {
+		return nil
+	}
+	return errors.New("num should be 999")
+}
+
+func isTrue(value *astjson.Value) error {
+	if bool(value.AstValue.(astjson.BoolAst)) {
+		return nil
+	}
+	return errors.New("bool should be true")
+}
+func hasAstjsonName(value *astjson.Value) error {
+	if value.AstValue.(astjson.StringAst) == "astjson" {
+		return nil
+	}
+	return errors.New("name should be astjson")
 }
 ```
+
 See more [examples here](astjson_example_test.go).
 
 ## Motivation

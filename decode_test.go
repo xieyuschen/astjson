@@ -7,11 +7,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Non_Pointer(t *testing.T) {
+func Test_Corner_Cases(t *testing.T) {
+
+	// destination is not a pointer
 	var i int
 	err := NewDecoder().Unmarshal(NewParser([]byte("")).Parse(), i)
 	assert.NotNil(t, err)
 	assert.Equal(t, "dest must be a pointer", err.Error())
+
+	// input value is nils
+	err = NewDecoder().Unmarshal(nil, &i)
+	assert.Equal(t, "value is a nil pointer", err.Error())
+
+	wrongValue := &Value{
+		NodeType: 7,
+		AstValue: nil,
+	}
+	err = NewDecoder().Unmarshal(wrongValue, &i)
+	assert.Equal(t, "invalid value", err.Error())
 }
 
 func Test_Unmarshal_Number(t *testing.T) {
@@ -336,6 +349,7 @@ func Test_Simple_Object(t *testing.T) {
 			ArrayInt  []int   `json:"array_int"`
 			ArrayInt1 [1]int  `json:"array_int1"`
 			Sub       Sub     `json:"sub"`
+			Useless   int
 			Nest
 		}
 	)
