@@ -28,6 +28,9 @@ func (d *Decoder) Unmarshal(val *Value, dest interface{}) error {
 
 // todo: think about using reflect.Value instead of interface{} as the type of dest
 func (d *Decoder) unmarshal(val *Value, dest interface{}) error {
+	if val == nil {
+		return errors.New("value is a nil pointer")
+	}
 	// todo: currently I only consider the valid conversion, need ensure behaviors if fail
 	switch val.NodeType {
 	case Number:
@@ -43,7 +46,7 @@ func (d *Decoder) unmarshal(val *Value, dest interface{}) error {
 	case Object:
 		return setObject(val, dest)
 	}
-	return nil
+	return errors.New("invalid value")
 }
 
 func setObject(val *Value, dest interface{}) error {
