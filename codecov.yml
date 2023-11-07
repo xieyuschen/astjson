@@ -1,0 +1,4 @@
+ignore:
+  - "numbertype_string.go"
+  - "type_string.go"
+  - "nodetype_string.go"

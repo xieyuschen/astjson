@@ -1,6 +1,8 @@
 package astjson
 
 // NodeType represents an AST node type
+//
+//go:generate stringer -type=NodeType
 type NodeType uint
 
 const (

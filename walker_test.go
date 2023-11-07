@@ -6,6 +6,62 @@ import (
 	"testing"
 )
 
+var (
+	mixedNode = &Value{
+		NodeType: Object,
+		AstValue: &ObjectAst{map[string]Value{
+			"str":   {NodeType: String, AstValue: StringAst(`123\b\t\r\n`)},
+			"num":   {NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 123}},
+			"bool":  {NodeType: Bool, AstValue: BoolAst(true)},
+			"null":  {NodeType: Null, AstValue: &NullAst{}},
+			"empty": {NodeType: Object, AstValue: &ObjectAst{map[string]Value{}}},
+			"embed-object": {
+				NodeType: Object,
+				AstValue: &ObjectAst{map[string]Value{
+					"hello": {NodeType: String, AstValue: StringAst("world")},
+				}}},
+			"array-in-object": {
+				NodeType: Object,
+				AstValue: &ObjectAst{map[string]Value{
+					"hello": {
+						NodeType: Array,
+						AstValue: &ArrayAst{values: []Value{{NodeType: String, AstValue: StringAst("world")}}}}},
+				}},
+			"array": {
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: String, AstValue: StringAst("world")},
+				}},
+			},
+			"empty-array": {
+				NodeType: Array,
+				AstValue: &ArrayAst{},
+			},
+			"embed-empty-array": {
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: Array, AstValue: &ArrayAst{}},
+					{NodeType: Array, AstValue: &ArrayAst{}},
+				}},
+			},
+			"array-empty-obj": {
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: Object, AstValue: &ObjectAst{m: map[string]Value{}}},
+					{NodeType: Object, AstValue: &ObjectAst{m: map[string]Value{}}},
+				}},
+			},
+			"array-obj": {
+				NodeType: Array,
+				AstValue: &ArrayAst{[]Value{
+					{NodeType: Object, AstValue: &ObjectAst{map[string]Value{"hello": {NodeType: String, AstValue: StringAst("world")}}}},
+					{NodeType: Object, AstValue: &ObjectAst{map[string]Value{"hello": {NodeType: String, AstValue: StringAst("world")}}}},
+				}},
+			},
+		}},
+	}
+)
+
 func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 	testCases := map[string]struct {
 		expected *Value
@@ -277,68 +333,14 @@ func Test_WalkTopLevel_Object_Empty(t *testing.T) {
 }
 
 func Test_WalkTopLevel_Object_Mixed(t *testing.T) {
-	input := &Value{
-		NodeType: Object,
-		AstValue: &ObjectAst{map[string]Value{
-			"str":   {NodeType: String, AstValue: StringAst(`123\b\t\r\n`)},
-			"num":   {NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 123}},
-			"bool":  {NodeType: Bool, AstValue: BoolAst(true)},
-			"null":  {NodeType: Null, AstValue: &NullAst{}},
-			"empty": {NodeType: Object, AstValue: &ObjectAst{map[string]Value{}}},
-			"embed-object": {
-				NodeType: Object,
-				AstValue: &ObjectAst{map[string]Value{
-					"hello": {NodeType: String, AstValue: StringAst("world")},
-				}}},
-			"array-in-object": {
-				NodeType: Object,
-				AstValue: &ObjectAst{map[string]Value{
-					"hello": {
-						NodeType: Array,
-						AstValue: &ArrayAst{values: []Value{{NodeType: String, AstValue: StringAst("world")}}}}},
-				}},
-			"array": {
-				NodeType: Array,
-				AstValue: &ArrayAst{[]Value{
-					{NodeType: String, AstValue: StringAst("world")},
-				}},
-			},
-			"empty-array": {
-				NodeType: Array,
-				AstValue: &ArrayAst{},
-			},
-			"embed-empty-array": {
-				NodeType: Array,
-				AstValue: &ArrayAst{[]Value{
-					{NodeType: Array, AstValue: &ArrayAst{}},
-					{NodeType: Array, AstValue: &ArrayAst{}},
-				}},
-			},
-			"array-empty-obj": {
-				NodeType: Array,
-				AstValue: &ArrayAst{[]Value{
-					{NodeType: Object, AstValue: &ObjectAst{m: map[string]Value{}}},
-					{NodeType: Object, AstValue: &ObjectAst{m: map[string]Value{}}},
-				}},
-			},
-			"array-obj": {
-				NodeType: Array,
-				AstValue: &ArrayAst{[]Value{
-					{NodeType: Object, AstValue: &ObjectAst{map[string]Value{"hello": {NodeType: String, AstValue: StringAst("world")}}}},
-					{NodeType: Object, AstValue: &ObjectAst{map[string]Value{"hello": {NodeType: String, AstValue: StringAst("world")}}}},
-				}},
-			},
-		}},
-	}
-
-	val, err := NewWalker(input).
+	val, err := NewWalker(mixedNode).
 		Optional("key1", func(value *Value) error {
 			panic("")
 		}).Walk()
 	assert.NoError(t, err)
-	assert.Equal(t, input, val)
+	assert.Equal(t, mixedNode, val)
 
-	val, err = NewWalker(input).
+	val, err = NewWalker(mixedNode).
 		Field("str").
 		Field("num").
 		Field("bool").
@@ -355,9 +357,9 @@ func Test_WalkTopLevel_Object_Mixed(t *testing.T) {
 		Walk()
 
 	assert.NoError(t, err)
-	assert.Equal(t, input, val)
+	assert.Equal(t, mixedNode, val)
 
-	val, err = NewWalker(input).
+	val, err = NewWalker(mixedNode).
 		Field("str").
 		Optional("num", func(value *Value) error {
 			actual := value.AstValue.(NumberAst).GetInt64()
@@ -386,9 +388,9 @@ func Test_WalkTopLevel_Object_Mixed(t *testing.T) {
 		Walk()
 
 	assert.NoError(t, err)
-	assert.Equal(t, input, val)
+	assert.Equal(t, mixedNode, val)
 
-	val, err = NewWalker(input).
+	val, err = NewWalker(mixedNode).
 		Field("str").
 		Optional("non-exist", func(value *Value) error {
 			actual := value.AstValue.(NumberAst).GetInt64()
@@ -399,9 +401,9 @@ func Test_WalkTopLevel_Object_Mixed(t *testing.T) {
 		}).Walk()
 
 	assert.NoError(t, err)
-	assert.Equal(t, input, val)
+	assert.Equal(t, mixedNode, val)
 
-	val, err = NewWalker(input).
+	val, err = NewWalker(mixedNode).
 		Field("str").
 		Optional("num", func(value *Value) error {
 			actual := value.AstValue.(NumberAst).GetInt64()
@@ -414,7 +416,7 @@ func Test_WalkTopLevel_Object_Mixed(t *testing.T) {
 	assert.Equal(t, "num should be 234", err.Error())
 	assert.Nil(t, val)
 
-	val, err = NewWalker(input).
+	val, err = NewWalker(mixedNode).
 		Field("str").
 		Field("num").Validate(func(value *Value) error {
 		actual := value.AstValue.(NumberAst).GetInt64()
@@ -427,7 +429,7 @@ func Test_WalkTopLevel_Object_Mixed(t *testing.T) {
 	assert.Equal(t, "num should be 234", err.Error())
 	assert.Nil(t, val)
 
-	val, err = NewWalker(input).
+	val, err = NewWalker(mixedNode).
 		Field("str").
 		ValidateKey("num", func(value *Value) error {
 			actual := value.AstValue.(NumberAst).GetInt64()
@@ -440,4 +442,35 @@ func Test_WalkTopLevel_Object_Mixed(t *testing.T) {
 	assert.Equal(t, "num should be 234", err.Error())
 	assert.Nil(t, val)
 
+}
+
+func Test_WalkPath_and_EndPath(t *testing.T) {
+	input := &Value{
+		NodeType: Object,
+		AstValue: &ObjectAst{map[string]Value{}},
+	}
+	w := NewWalker(input)
+
+	assert.NotNil(t, w.Path("").err)
+	val, err := w.Path("").Walk()
+	assert.NotNil(t, err)
+	assert.Nil(t, val)
+
+	assert.NotNil(t, w.Path("123").err)
+	assert.NotNil(t, w.Path("123").EndPath().err)
+
+	w = NewWalker(mixedNode)
+	nw := w.Path("str")
+	assert.NoError(t, w.err)
+	strNode := &Value{NodeType: String, AstValue: StringAst(`123\b\t\r\n`)}
+	assert.Equal(t, strNode, nw.value)
+	assert.Equal(t, w, nw.EndPath())
+
+	w = NewWalker(mixedNode)
+	nw = w.Path("embed-object").Path("hello")
+	assert.NoError(t, w.err)
+	strNode = &Value{NodeType: String, AstValue: StringAst("world")}
+	assert.Equal(t, strNode, nw.value)
+	assert.Equal(t, w, nw.EndPath())
+	assert.Equal(t, mixedNode, nw.EndPath().value)
 }
