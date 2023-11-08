@@ -83,9 +83,30 @@ func (w *Walker) Optional(key string, validator Validator) *Walker {
 	return w
 }
 
-// Walk executes all handlers submitted to it and return a final Value after walking.
+// Walk executes all handlers submitted to it and the sub-walker created by Path and EndPath.
+// The returned value always be the value in original walker. See Clone to walk from current walker
+// as the very beginning.
 // The error is returned when validator fails, and the value is nil.
 func (w *Walker) Walk() (*Value, error) {
+	current := w.head
+	for current != nil {
+		if _, err := current.walk(); err != nil {
+			return nil, err
+		}
+		current = current.next
+	}
+	return w.head.value, nil
+}
+
+// Clone return a new path which removes the relationships with its ancestor
+func (w *Walker) Clone() *Walker {
+	// todo: implement me!
+	return nil
+}
+
+// walk executes all handlers submitted to it and return a final Value after walking.
+// The error is returned when validator fails, and the value is nil.
+func (w *Walker) walk() (*Value, error) {
 	if w.err != nil {
 		return nil, w.err
 	}

@@ -1,3 +1,14 @@
+coverage:
+  status:
+    project:
+      default:
+        # basic
+        target: auto
+        threshold: 5%
+        base: auto
+        flags:
+          - unit
+
 ignore:
   - "numbertype_string.go"
   - "type_string.go"
