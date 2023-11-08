@@ -361,20 +361,8 @@ func Test_WalkTopLevel_Object_Mixed(t *testing.T) {
 
 	val, err = NewWalker(mixedNode).
 		Field("str").
-		Optional("num", func(value *Value) error {
-			actual := value.AstValue.(NumberAst).GetInt64()
-			if actual == 123 {
-				return nil
-			}
-			return errors.New("num should be 123")
-		}).
-		Field("bool").
-		Validate(func(value *Value) error {
-			if value.AstValue.(BoolAst) {
-				return nil
-			}
-			return errors.New("bool should be true")
-		}).
+		Optional("num", shouldBe123).
+		Field("bool").Validate(shouldBeTrue).
 		Field("null").
 		Field("empty").
 		Field("embed-object").
@@ -392,52 +380,29 @@ func Test_WalkTopLevel_Object_Mixed(t *testing.T) {
 
 	val, err = NewWalker(mixedNode).
 		Field("str").
-		Optional("non-exist", func(value *Value) error {
-			actual := value.AstValue.(NumberAst).GetInt64()
-			if actual == 234 {
-				return nil
-			}
-			return errors.New("num should be 234")
-		}).Walk()
+		Optional("non-exist", shouldBe234).Walk()
 
 	assert.NoError(t, err)
 	assert.Equal(t, mixedNode, val)
 
 	val, err = NewWalker(mixedNode).
 		Field("str").
-		Optional("num", func(value *Value) error {
-			actual := value.AstValue.(NumberAst).GetInt64()
-			if actual == 234 {
-				return nil
-			}
-			return errors.New("num should be 234")
-		}).Walk()
+		Optional("num", shouldBe234).Walk()
 
 	assert.Equal(t, "num should be 234", err.Error())
 	assert.Nil(t, val)
 
 	val, err = NewWalker(mixedNode).
 		Field("str").
-		Field("num").Validate(func(value *Value) error {
-		actual := value.AstValue.(NumberAst).GetInt64()
-		if actual == 234 {
-			return nil
-		}
-		return errors.New("num should be 234")
-	}).Walk()
+		Field("num").Validate(shouldBe234).
+		Walk()
 
 	assert.Equal(t, "num should be 234", err.Error())
 	assert.Nil(t, val)
 
 	val, err = NewWalker(mixedNode).
 		Field("str").
-		ValidateKey("num", func(value *Value) error {
-			actual := value.AstValue.(NumberAst).GetInt64()
-			if actual == 234 {
-				return nil
-			}
-			return errors.New("num should be 234")
-		}).Walk()
+		ValidateKey("num", shouldBe234).Walk()
 
 	assert.Equal(t, "num should be 234", err.Error())
 	assert.Nil(t, val)
@@ -473,4 +438,61 @@ func Test_WalkPath_and_EndPath(t *testing.T) {
 	assert.Equal(t, strNode, nw.value)
 	assert.Equal(t, w, nw.EndPath())
 	assert.Equal(t, mixedNode, nw.EndPath().value)
+}
+
+func Test_Walk_Object_Mixed(t *testing.T) {
+	w := NewWalker(mixedNode).
+		Field("str").
+		Optional("num", shouldBe123).
+		Field("bool").Validate(shouldBeTrue).
+		Path("embed-object").Validate(shouldBeObject).
+		Path("hello").Validate(shouldBeWorld)
+
+	val, err := w.EndPath().Walk()
+	assert.Equal(t, mixedNode, val)
+	assert.NoError(t, err)
+
+	val, err = w.Walk()
+	assert.Equal(t, mixedNode, val)
+	assert.NoError(t, err)
+}
+
+func Test_WalkerClone(t *testing.T) {
+	assert.Nil(t, NewWalker(nil).Clone())
+}
+func shouldBeWorld(value *Value) error {
+	if value.AstValue.(StringAst) != "world" {
+		return errors.New("value should be world")
+	}
+	return nil
+}
+
+func shouldBeObject(value *Value) error {
+	if value.AstValue != Object {
+		return errors.New("value should be an object")
+	}
+	return nil
+}
+
+func shouldBe234(value *Value) error {
+	actual := value.AstValue.(NumberAst).GetInt64()
+	if actual == 234 {
+		return nil
+	}
+	return errors.New("num should be 234")
+}
+
+func shouldBe123(value *Value) error {
+	actual := value.AstValue.(NumberAst).GetInt64()
+	if actual == 123 {
+		return nil
+	}
+	return errors.New("num should be 123")
+}
+
+func shouldBeTrue(value *Value) error {
+	if value.AstValue.(BoolAst) {
+		return nil
+	}
+	return errors.New("bool should be true")
 }
