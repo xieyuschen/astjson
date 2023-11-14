@@ -76,7 +76,7 @@ func setObject(val *Value, dest interface{}) error {
 			continue
 		}
 
-		astVal := obj.m[tag]
+		astVal := obj.KvMap[tag]
 
 		// construct a pointer type of field type to store the data
 		// we cannot pass the field directly because it's not a reference but a value, however,
@@ -94,7 +94,7 @@ func setObject(val *Value, dest interface{}) error {
 
 // setArray sets the json array into golang a slice or an array.
 func setArray(val *Value, dest interface{}) error {
-	ars := val.AstValue.(*ArrayAst).values
+	ars := val.AstValue.(*ArrayAst).Values
 
 	kind := reflect.TypeOf(dest).Elem().Kind()
 	if kind != reflect.Array && kind != reflect.Slice {

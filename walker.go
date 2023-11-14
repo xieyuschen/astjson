@@ -16,7 +16,7 @@ var (
 // Validator will be executed before Manipulator.
 type Validator func(value *Value) error
 
-// Manipulator allows to change the Value and its children values.
+// Manipulator allows to change the Value and its children KvMap.
 // Manipulator will be executed after Validator.
 type Manipulator func(value *Value)
 
@@ -131,7 +131,7 @@ func (w *Walker) checkArrayAndLiteral() (*Value, error) {
 }
 
 func (w *Walker) checkObject() (*Value, error) {
-	objectMap := w.value.AstValue.(*ObjectAst).m
+	objectMap := w.value.AstValue.(*ObjectAst).KvMap
 	for _, field := range w.compulsoryFields {
 		if _, ok := objectMap[field]; !ok {
 			return nil, fmt.Errorf("%w: %s", ErrFieldNotExist, field)
@@ -164,7 +164,7 @@ func (w *Walker) Path(path string) *Walker {
 	switch w.value.NodeType {
 	case Object:
 		obj := w.value.AstValue.(*ObjectAst)
-		val, ok := obj.m[path]
+		val, ok := obj.KvMap[path]
 		if ok {
 			n := Walker{
 				head:  w.head,
