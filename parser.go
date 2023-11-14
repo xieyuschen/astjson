@@ -47,10 +47,10 @@ func (p *Parser) parse(tk token) *Value {
 // because we always verify the type before appending the array, it's safe to
 // compare the tail element.
 func (a *ArrayAst) verifyNextType(ntp NodeType) bool {
-	if len(a.values) == 0 {
+	if len(a.Values) == 0 {
 		return true
 	}
-	if a.values[len(a.values)-1].NodeType == ntp {
+	if a.Values[len(a.Values)-1].NodeType == ntp {
 		return true
 	}
 	return false
@@ -71,7 +71,7 @@ func (p *Parser) arrayParser() *Value {
 		val := p.parse(tk)
 
 		if ar.verifyNextType(val.NodeType) {
-			ar.values = append(ar.values, *val)
+			ar.Values = append(ar.Values, *val)
 		} else {
 			panic("inconsistent array value type")
 		}
@@ -96,7 +96,7 @@ func (p *Parser) arrayParser() *Value {
 // objectParser parses the remained part of an array after tkObjectStart is found before.
 func (p *Parser) objectParser() *Value {
 	var v ObjectAst
-	v.m = map[string]Value{}
+	v.KvMap = map[string]Value{}
 
 	for {
 		start := p.nextExceptWhitespace()
@@ -117,12 +117,12 @@ func (p *Parser) objectParser() *Value {
 		if tkColon != p.nextExceptWhitespace().tp {
 			panic("invalid json schema after key")
 		}
-		if _, ok := v.m[key]; ok {
+		if _, ok := v.KvMap[key]; ok {
 			panic("duplicated key")
 		}
 
 		val := p.parse(p.nextExceptWhitespace())
-		v.m[key] = *val
+		v.KvMap[key] = *val
 
 		// check whether an object ends
 		// todo: refine me: the logic here is duplicated with the beginning of the for loop
@@ -210,19 +210,19 @@ func tokenNumber(bs []byte, tk token) NumberAst {
 
 	if tk.isFloat {
 		f, _ := strconv.ParseFloat(string(bs[tk.leftPos:tk.rightPos]), 64)
-		numberAst.nt = floatNumber
+		numberAst.Nt = floatNumber
 		numberAst.f = f
 		return numberAst
 	}
 	if tk.hasDash {
 		i, _ := strconv.ParseInt(string(bs[tk.leftPos:tk.rightPos]), 10, 64)
-		numberAst.nt = integer
+		numberAst.Nt = integer
 		numberAst.i = i
 		return numberAst
 	}
 
 	u, _ := strconv.ParseUint(string(bs[tk.leftPos:tk.rightPos]), 10, 64)
-	numberAst.nt = unsignedInteger
+	numberAst.Nt = unsignedInteger
 	numberAst.u = u
 	return numberAst
 }

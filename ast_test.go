@@ -16,7 +16,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: unsignedInteger,
+					Nt: unsignedInteger,
 					u:  999,
 				},
 			},
@@ -26,7 +26,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  -999,
 				},
 			},
@@ -36,7 +36,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  9223372036854775807,
 				},
 			},
@@ -46,7 +46,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  -9223372036854775808,
 				},
 			},
@@ -56,7 +56,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: unsignedInteger,
+					Nt: unsignedInteger,
 					u:  18446744073709551615,
 				},
 			},
@@ -65,7 +65,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 		"zero": {
 			input: &Value{
 				NodeType: Number,
-				AstValue: NumberAst{nt: unsignedInteger, u: 0},
+				AstValue: NumberAst{Nt: unsignedInteger, u: 0},
 			},
 			expected: 0,
 		},
@@ -74,7 +74,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  float64(18446744073709551615),
 				},
 			},
@@ -84,7 +84,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  0.99,
 				},
 			},
@@ -94,7 +94,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  1.49,
 				},
 			},
@@ -104,7 +104,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  1.99,
 				},
 			},
@@ -114,7 +114,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  -0.99,
 				},
 			},
@@ -124,7 +124,7 @@ func TestNumberAst_GetInt64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  -1.99,
 				},
 			},
@@ -153,7 +153,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: unsignedInteger,
+					Nt: unsignedInteger,
 					u:  999,
 				},
 			},
@@ -163,7 +163,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  -999,
 				},
 			},
@@ -174,7 +174,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  9223372036854775807,
 				},
 			},
@@ -184,7 +184,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  -9223372036854775808,
 				},
 			},
@@ -194,7 +194,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: unsignedInteger,
+					Nt: unsignedInteger,
 					u:  18446744073709551615,
 				},
 			},
@@ -203,7 +203,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 		"zero": {
 			input: &Value{
 				NodeType: Number,
-				AstValue: NumberAst{nt: unsignedInteger, u: 0},
+				AstValue: NumberAst{Nt: unsignedInteger, u: 0},
 			},
 			expected: 0,
 		},
@@ -212,7 +212,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  float64(18446744073709551615),
 				},
 			},
@@ -222,7 +222,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  0.99,
 				},
 			},
@@ -232,7 +232,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  1.49,
 				},
 			},
@@ -242,7 +242,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  1.99,
 				},
 			},
@@ -252,7 +252,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  -0.99,
 				},
 			},
@@ -262,7 +262,7 @@ func TestNumberAst_GetUint64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  -1.99,
 				},
 			},
@@ -292,7 +292,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: unsignedInteger,
+					Nt: unsignedInteger,
 					u:  999,
 				},
 			},
@@ -302,7 +302,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  -999,
 				},
 			},
@@ -313,7 +313,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  9223372036854775807,
 				},
 			},
@@ -323,7 +323,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  -9223372036854775808,
 				},
 			},
@@ -333,7 +333,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: unsignedInteger,
+					Nt: unsignedInteger,
 					u:  18446744073709551615,
 				},
 			},
@@ -342,7 +342,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 		"zero": {
 			input: &Value{
 				NodeType: Number,
-				AstValue: NumberAst{nt: unsignedInteger, u: 0},
+				AstValue: NumberAst{Nt: unsignedInteger, u: 0},
 			},
 			expected: 0,
 		},
@@ -351,7 +351,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  float64(18446744073709551615),
 				},
 			},
@@ -361,7 +361,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  0.99,
 				},
 			},
@@ -371,7 +371,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  1.49,
 				},
 			},
@@ -381,7 +381,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  1.99,
 				},
 			},
@@ -391,7 +391,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  -0.99,
 				},
 			},
@@ -401,7 +401,7 @@ func TestNumberAst_GetFloat64(t *testing.T) {
 			input: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  -1.99,
 				},
 			},

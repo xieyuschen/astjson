@@ -11,7 +11,7 @@ var (
 		NodeType: Object,
 		AstValue: &ObjectAst{map[string]Value{
 			"str":   {NodeType: String, AstValue: StringAst(`123\b\t\r\n`)},
-			"num":   {NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 123}},
+			"num":   {NodeType: Number, AstValue: NumberAst{Nt: unsignedInteger, u: 123}},
 			"bool":  {NodeType: Bool, AstValue: BoolAst(true)},
 			"null":  {NodeType: Null, AstValue: &NullAst{}},
 			"empty": {NodeType: Object, AstValue: &ObjectAst{map[string]Value{}}},
@@ -25,7 +25,7 @@ var (
 				AstValue: &ObjectAst{map[string]Value{
 					"hello": {
 						NodeType: Array,
-						AstValue: &ArrayAst{values: []Value{{NodeType: String, AstValue: StringAst("world")}}}}},
+						AstValue: &ArrayAst{Values: []Value{{NodeType: String, AstValue: StringAst("world")}}}}},
 				}},
 			"array": {
 				NodeType: Array,
@@ -47,8 +47,8 @@ var (
 			"array-empty-obj": {
 				NodeType: Array,
 				AstValue: &ArrayAst{[]Value{
-					{NodeType: Object, AstValue: &ObjectAst{m: map[string]Value{}}},
-					{NodeType: Object, AstValue: &ObjectAst{m: map[string]Value{}}},
+					{NodeType: Object, AstValue: &ObjectAst{KvMap: map[string]Value{}}},
+					{NodeType: Object, AstValue: &ObjectAst{KvMap: map[string]Value{}}},
 				}},
 			},
 			"array-obj": {
@@ -106,7 +106,7 @@ func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 			expected: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: unsignedInteger,
+					Nt: unsignedInteger,
 					u:  999,
 				},
 			},
@@ -122,7 +122,7 @@ func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 			expected: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: unsignedInteger,
+					Nt: unsignedInteger,
 					u:  888,
 				},
 			},
@@ -139,7 +139,7 @@ func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 			expected: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: unsignedInteger,
+					Nt: unsignedInteger,
 					u:  999,
 				},
 			},
@@ -156,7 +156,7 @@ func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 			expected: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: unsignedInteger,
+					Nt: unsignedInteger,
 					u:  888,
 				},
 			},
@@ -173,7 +173,7 @@ func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 			expected: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  -1,
 				},
 			},
@@ -189,7 +189,7 @@ func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 			expected: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: integer,
+					Nt: integer,
 					i:  -1,
 				},
 			},
@@ -205,7 +205,7 @@ func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 			expected: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  -0.99,
 				},
 			},
@@ -221,7 +221,7 @@ func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 			expected: &Value{
 				NodeType: Number,
 				AstValue: NumberAst{
-					nt: floatNumber,
+					Nt: floatNumber,
 					f:  -1.99,
 				},
 			},
@@ -263,13 +263,13 @@ func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 			expected: &Value{
 				NodeType: Array,
 				AstValue: &ArrayAst{[]Value{
-					{NodeType: Number, AstValue: NumberAst{nt: integer, i: -1}},
-					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 0}},
-					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 1}},
+					{NodeType: Number, AstValue: NumberAst{Nt: integer, i: -1}},
+					{NodeType: Number, AstValue: NumberAst{Nt: unsignedInteger, u: 0}},
+					{NodeType: Number, AstValue: NumberAst{Nt: unsignedInteger, u: 1}},
 				}},
 			},
 			validate: func(value *Value) error {
-				if len(value.AstValue.(*ArrayAst).values) == 3 {
+				if len(value.AstValue.(*ArrayAst).Values) == 3 {
 					return nil
 				}
 				return errors.New("array should have three element")
@@ -280,14 +280,14 @@ func Test_WalkTopLevel_LiteralAndArray(t *testing.T) {
 			expected: &Value{
 				NodeType: Array,
 				AstValue: &ArrayAst{[]Value{
-					{NodeType: Number, AstValue: NumberAst{nt: integer, i: -1}},
-					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 0}},
-					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 1}},
-					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 2}},
+					{NodeType: Number, AstValue: NumberAst{Nt: integer, i: -1}},
+					{NodeType: Number, AstValue: NumberAst{Nt: unsignedInteger, u: 0}},
+					{NodeType: Number, AstValue: NumberAst{Nt: unsignedInteger, u: 1}},
+					{NodeType: Number, AstValue: NumberAst{Nt: unsignedInteger, u: 2}},
 				}},
 			},
 			validate: func(value *Value) error {
-				if len(value.AstValue.(*ArrayAst).values) == 3 {
+				if len(value.AstValue.(*ArrayAst).Values) == 3 {
 					return nil
 				}
 				return errors.New("array should have three element")

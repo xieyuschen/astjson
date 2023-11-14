@@ -19,32 +19,32 @@ func Test_Parse_Literal(t *testing.T) {
 		"positive integer": {input: "999", expected: &Value{
 			NodeType: Number,
 			AstValue: NumberAst{
-				nt: unsignedInteger,
+				Nt: unsignedInteger,
 				u:  999,
 			},
 		}},
 		"negative integer": {input: "-999", expected: &Value{
 			NodeType: Number,
 			AstValue: NumberAst{
-				nt: integer,
+				Nt: integer,
 				i:  -999,
 			},
 		}},
 		"zero": {input: "0", expected: &Value{
 			NodeType: Number,
-			AstValue: NumberAst{nt: unsignedInteger, u: 0},
+			AstValue: NumberAst{Nt: unsignedInteger, u: 0},
 		}},
 		"positive float": {input: "0.99", expected: &Value{
 			NodeType: Number,
 			AstValue: NumberAst{
-				nt: floatNumber,
+				Nt: floatNumber,
 				f:  0.99,
 			},
 		}},
 		"negative float": {input: "-0.99", expected: &Value{
 			NodeType: Number,
 			AstValue: NumberAst{
-				nt: floatNumber,
+				Nt: floatNumber,
 				f:  -0.99,
 			},
 		}},
@@ -100,7 +100,7 @@ func Test_Parse_Object(t *testing.T) {
 				NodeType: Object,
 				AstValue: &ObjectAst{map[string]Value{
 					"123": {NodeType: Number, AstValue: NumberAst{
-						nt: unsignedInteger,
+						Nt: unsignedInteger,
 						u:  123,
 					}}},
 				},
@@ -198,9 +198,9 @@ func Test_Parse_Array(t *testing.T) {
 			expected: &Value{
 				NodeType: Array,
 				AstValue: &ArrayAst{[]Value{
-					{NodeType: Number, AstValue: NumberAst{nt: integer, i: -1}},
-					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 0}},
-					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 1}},
+					{NodeType: Number, AstValue: NumberAst{Nt: integer, i: -1}},
+					{NodeType: Number, AstValue: NumberAst{Nt: unsignedInteger, u: 0}},
+					{NodeType: Number, AstValue: NumberAst{Nt: unsignedInteger, u: 1}},
 				}},
 			},
 		},
@@ -210,9 +210,9 @@ func Test_Parse_Array(t *testing.T) {
 			expected: &Value{
 				NodeType: Array,
 				AstValue: &ArrayAst{[]Value{
-					{NodeType: Number, AstValue: NumberAst{nt: floatNumber, f: -0.99}},
-					{NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 0}},
-					{NodeType: Number, AstValue: NumberAst{nt: floatNumber, f: 9.99}},
+					{NodeType: Number, AstValue: NumberAst{Nt: floatNumber, f: -0.99}},
+					{NodeType: Number, AstValue: NumberAst{Nt: unsignedInteger, u: 0}},
+					{NodeType: Number, AstValue: NumberAst{Nt: floatNumber, f: 9.99}},
 				}},
 			},
 		},
@@ -311,7 +311,7 @@ func Test_Parse_Mixture(t *testing.T) {
 				NodeType: Object,
 				AstValue: &ObjectAst{map[string]Value{
 					"str":   {NodeType: String, AstValue: StringAst(`123\b\t\r\n`)},
-					"num":   {NodeType: Number, AstValue: NumberAst{nt: unsignedInteger, u: 123}},
+					"num":   {NodeType: Number, AstValue: NumberAst{Nt: unsignedInteger, u: 123}},
 					"bool":  {NodeType: Bool, AstValue: BoolAst(true)},
 					"null":  {NodeType: Null, AstValue: &NullAst{}},
 					"empty": {NodeType: Object, AstValue: &ObjectAst{map[string]Value{}}},
@@ -325,7 +325,7 @@ func Test_Parse_Mixture(t *testing.T) {
 						AstValue: &ObjectAst{map[string]Value{
 							"hello": {
 								NodeType: Array,
-								AstValue: &ArrayAst{values: []Value{{NodeType: String, AstValue: StringAst("world")}}}}},
+								AstValue: &ArrayAst{Values: []Value{{NodeType: String, AstValue: StringAst("world")}}}}},
 						}},
 					"array": {
 						NodeType: Array,
@@ -347,8 +347,8 @@ func Test_Parse_Mixture(t *testing.T) {
 					"array-empty-obj": {
 						NodeType: Array,
 						AstValue: &ArrayAst{[]Value{
-							{NodeType: Object, AstValue: &ObjectAst{m: map[string]Value{}}},
-							{NodeType: Object, AstValue: &ObjectAst{m: map[string]Value{}}},
+							{NodeType: Object, AstValue: &ObjectAst{KvMap: map[string]Value{}}},
+							{NodeType: Object, AstValue: &ObjectAst{KvMap: map[string]Value{}}},
 						}},
 					},
 					"array-obj": {

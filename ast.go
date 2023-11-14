@@ -25,10 +25,10 @@ type Value struct {
 }
 
 //go:generate stringer -type=numberType
-type numberType uint
+type NumberType uint
 
 const (
-	floatNumber numberType = iota
+	floatNumber NumberType = iota
 	// unsignedInteger refers we could store the value inside an uint64
 	unsignedInteger
 	// integer refers we could store the value inside an int64
@@ -36,16 +36,16 @@ const (
 )
 
 type NumberAst struct {
-	nt numberType
+	Nt NumberType
 	f  float64
 	u  uint64
 	i  int64
 }
 
-// GetInt64 returns the values inside a NumberAst, it's possible to
+// GetInt64 returns the KvMap inside a NumberAst, it's possible to
 // lose precise for float64 or overflow for uint64
 func (n NumberAst) GetInt64() int64 {
-	switch n.nt {
+	switch n.Nt {
 	case integer:
 		return n.i
 	case unsignedInteger:
@@ -58,7 +58,7 @@ func (n NumberAst) GetInt64() int64 {
 }
 
 func (n NumberAst) GetUint64() uint64 {
-	switch n.nt {
+	switch n.Nt {
 	case integer:
 		return uint64(n.i)
 	case unsignedInteger:
@@ -71,7 +71,7 @@ func (n NumberAst) GetUint64() uint64 {
 }
 
 func (n NumberAst) GetFloat64() float64 {
-	switch n.nt {
+	switch n.Nt {
 	case integer:
 		return float64(n.i)
 	case unsignedInteger:
@@ -88,9 +88,9 @@ type BoolAst bool
 type StringAst string
 
 type ObjectAst struct {
-	m map[string]Value
+	KvMap map[string]Value
 }
 
 type ArrayAst struct {
-	values []Value
+	Values []Value
 }
